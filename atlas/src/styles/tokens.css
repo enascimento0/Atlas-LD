@@ -1,0 +1,64 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Tokens do Atlas = tokens do APOL+ Marcas (cópia fiel de src/index.css do APOL+).
+   Ao mudar o DS do APOL+, atualize este arquivo junto.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  --c-brand: #0D2137; --c-brand-hover: #16304F;
+  --c-secondary: #27AE60; --c-secondary-h: #219150; --c-secondary-a: #1B7A44;
+  --c-support: #0059AD; --c-support-h: #004A8F; --c-support-a: #003E7E;
+  --c-neutral: #6B7280; --c-neutral-h: #4B5563; --c-text-muted: #9CA3AF;
+  --c-border: #E5E7EB; --c-table-head: #F9FAFB; --c-table-head-txt: #374151;
+  --c-ai: #8B5CF6; --c-ai-hover: #7C3AED; --c-ai-bg: #EDE9FE;
+  --c-success: #27AE60; --c-success-bg: #DCFCE7; --c-success-txt: #166534;
+  --c-danger: #EF4444; --c-danger-bg: #FEE2E2; --c-danger-txt: #991B1B;
+  --c-warning: #F59E0B; --c-warning-bg: #FEF3C7; --c-warning-txt: #92400E;
+  --c-info: #3B82F6; --c-info-bg: #DBEAFE; --c-info-txt: #1E40AF;
+  --c-sidebar-bg: #001A33;
+  --c-sidebar-admin-bg: #000D1A;   /* azul mais escuro do tema marinho: bloco Administração da sidebar */
+  --c-lembrete: #F97316; --c-lembrete-bg: #FFEDD5;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.10), 0 1px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.15), 0 4px 12px rgba(0,0,0,.08);
+  --c-input-border-disabled: #D6D6E6; --c-input-bg-disabled: #F6F6FF;
+  --c-input-text-disabled: #9E9E9E; --c-input-error: #D22D37;
+  --c-bg: #F4F6F9; --c-surface: #FFFFFF; --c-surface-2: #F8FAFC;
+  --c-text: #1F2937; --c-border-soft: #EDF0F5; --c-img-bg: #FFFFFF;
+
+  /* Escalas sugeridas pelo DS do APOL+ */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px;
+  --radius-sm: 6px; --radius-md: 8px; --radius-lg: 10px; --radius-xl: 12px; --radius-2xl: 14px;
+
+  /* Só do Atlas (documentação) */
+  --doc-overlay-load: rgba(255,255,255,.75);
+  --doc-row-hover: #FAFBFC;
+  --font: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+
+html.dark-mode {
+  color-scheme: dark;
+  --c-bg: #0F141A; --c-surface: #161D26; --c-surface-2: #1C2530; --c-text: #E6EAF0;
+  --c-border: #2A3542; --c-border-soft: #222C38; --c-table-head: #1C2530; --c-table-head-txt: #C5CDD8;
+  --c-neutral: #9AA5B4; --c-neutral-h: #C5CDD8; --c-text-muted: #6E7A8A;
+  --c-success-bg: #12301F; --c-success-txt: #6EE7A0; --c-danger-bg: #3A1717; --c-danger-txt: #FCA5A5;
+  --c-warning-bg: #3A2A0C; --c-warning-txt: #FCD34D; --c-info-bg: #142744; --c-info-txt: #93C5FD;
+  --c-ai-bg: #2A2145; --c-ai-hover: #C4B5FD;
+  --c-lembrete: #FB923C; --c-lembrete-bg: #3A2210;
+  --c-input-border-disabled: #2A3542; --c-input-bg-disabled: #1C2530; --c-input-text-disabled: #6E7A8A;
+  --c-img-bg: #F4F6F9;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.45), 0 1px 4px rgba(0,0,0,.3);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.35);
+  --doc-overlay-load: rgba(15,20,26,.75);
+  --doc-row-hover: #1C2530;
+
+  /* Tokens do calendário (SeletorDePeriodo/SeletorDeData): existem só no escuro; no claro vale o fallback do var(). */
+  --dk-surface: var(--c-surface);
+  --dk-text-2: #C5CDD8;                       /* = --c-table-head-txt no escuro */
+  --dk-muted: var(--c-text-muted);
+  --dk-border: var(--c-border);
+  --dk-hover: color-mix(in srgb, var(--c-support) 16%, var(--c-surface));
+}
+html.dark-mode body { --c-support: #3B8AE0; --c-support-h: #5A9DE6; --c-support-a: #2F74C0; }

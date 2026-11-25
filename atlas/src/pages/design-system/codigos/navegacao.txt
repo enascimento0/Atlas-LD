@@ -1,0 +1,96 @@
+=== Tabs | Tabs.tsx
+interface Aba { id: string; rotulo: string }
+
+export function Tabs({ abas, ativa, onChange }: { abas: Aba[]; ativa: string; onChange: (id: string) => void }) {
+  return (
+    <div className="tabs" role="tablist">
+      {abas.map(a => (
+        <button key={a.id} type="button" role="tab" aria-selected={a.id === ativa}
+          className={`tab${a.id === ativa ? ' is-ativa' : ''}`} onClick={() => onChange(a.id)}>
+          {a.rotulo}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+=== Tabs | tabs.css
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--c-border); }   /* linha-base de 1px */
+.tab {
+  display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; margin-bottom: -1px;   /* -1px sobrepõe a linha-base */
+  border: none; border-bottom: 2px solid transparent; background: none; cursor: pointer;
+  font: 600 12.5px 'Inter', sans-serif; color: var(--c-neutral); white-space: nowrap;
+}
+.tab:hover { color: var(--c-text); }
+.tab.is-ativa { color: var(--c-support); border-bottom-color: var(--c-support); }
+
+/* Alternador de visão (toggle em grupo) */
+.view-toggle { display: flex; overflow: hidden; flex-shrink: 0; border: 1.5px solid var(--c-border); border-radius: 8px; }
+
+=== Pagination | Paginacao.tsx
+import { CaretLeft, CaretRight } from '@phosphor-icons/react'
+
+export const TAMANHOS_PAGINA = [20, 50, 100]          // padrão 20
+
+/** Até 7 páginas mostra todas; acima disso → 1 … [atual−2 … atual+2] … total */
+export function gerarPaginas(atual: number, total: number): (number | '...')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const p: (number | '...')[] = [1]
+  if (atual > 3) p.push('...')
+  for (let n = Math.max(2, atual - 2); n <= Math.min(total - 1, atual + 2); n++) p.push(n)
+  if (atual < total - 2) p.push('...')
+  p.push(total)
+  return p
+}
+
+export function Paginacao({ pagina, tamanho, total, rotulo = 'registros', onPagina, onTamanho }: {
+  pagina: number; tamanho: number; total: number; rotulo?: string
+  onPagina: (p: number) => void; onTamanho: (t: number) => void
+}) {
+  const totalPaginas = Math.max(1, Math.ceil(total / tamanho))
+  const inicio = total === 0 ? 0 : (pagina - 1) * tamanho + 1
+  const fim = Math.min(pagina * tamanho, total)
+  const n = (v: number) => v.toLocaleString('pt-BR')
+
+  return (
+    <div className="pag">
+      <span className="pag__info">Exibindo <strong>{n(inicio)}–{n(fim)}</strong> de <strong>{n(total)}</strong> {rotulo}</span>
+      <div className="pag__controles">
+        {/* trocar o tamanho SEMPRE volta para a página 1 (idem ao trocar a ordenação) */}
+        <select className="pag__tam" value={tamanho} onChange={e => { onTamanho(Number(e.target.value)); onPagina(1) }}>
+          {TAMANHOS_PAGINA.map(t => <option key={t} value={t}>{t} por página</option>)}
+        </select>
+        <div className="pag__btns">
+          <button className="pag__btn" disabled={pagina <= 1} onClick={() => onPagina(pagina - 1)} title="Página anterior"><CaretLeft size={12} /></button>
+          {gerarPaginas(pagina, totalPaginas).map((p, i) => p === '...'
+            ? <span key={`e${i}`} className="pag__reticencias">…</span>
+            : <button key={p} className={`pag__btn${p === pagina ? ' is-ativa' : ''}`} onClick={() => onPagina(p)}>{p}</button>)}
+          <button className="pag__btn" disabled={pagina >= totalPaginas} onClick={() => onPagina(pagina + 1)} title="Próxima página"><CaretRight size={12} /></button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+=== Pagination | paginacao.css
+.pag { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 16px; font-size: 12px; color: var(--c-neutral); }
+.pag__info strong { color: var(--c-text); }
+.pag__controles { display: flex; align-items: center; gap: 6px; }
+.pag__btns { display: flex; align-items: center; gap: 4px; }
+.pag__btn {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 8px;
+  border: 1.5px solid var(--c-border); border-radius: 6px; background: var(--c-surface);
+  font-size: 12px; color: var(--c-table-head-txt); cursor: pointer; transition: border-color .15s, color .15s;
+}
+.pag__btn:hover:not(:disabled) { border-color: var(--c-support); color: var(--c-support); }
+.pag__btn.is-ativa { background: var(--c-support); border-color: var(--c-support); color: var(--c-surface); font-weight: 700; }
+.pag__btn:disabled { opacity: .4; cursor: not-allowed; }
+.pag__reticencias { padding: 0 2px; font-size: 12px; line-height: 28px; color: var(--c-text-muted); }
+.pag__tam { height: 28px; padding: 0 8px; border: 1.5px solid var(--c-border); border-radius: 6px; font: 12px 'Inter', sans-serif; color: var(--c-table-head-txt); }
+@media (max-width: 640px) { .pag { flex-direction: column; align-items: stretch; } }
+
+=== Pagination | Uso.tsx
+{/* Auto-scroll ao trocar de página */}
+useEffect(() => { if (buscou) resultadosRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [pagina])
+
+<Paginacao pagina={pagina} tamanho={tamanho} total={total} rotulo="processos" onPagina={setPagina} onTamanho={setTamanho} />

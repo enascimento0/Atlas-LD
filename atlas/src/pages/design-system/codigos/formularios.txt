@@ -1,0 +1,402 @@
+=== Input Text | Field.tsx
+import type { InputHTMLAttributes, ReactNode } from 'react'
+import './field.css'
+
+interface FieldProps extends InputHTMLAttributes<HTMLInputElement> {
+  label: string
+  /** 'stack' = rótulo em cima (.fg, formulários de detalhe). 'row' = rótulo ao lado (.mf-row, filtros). */
+  layout?: 'stack' | 'row'
+  error?: string
+  hint?: ReactNode
+}
+
+export function Field({ label, layout = 'stack', error, hint, id, ...input }: FieldProps) {
+  const campo = id ?? `f-${label.toLowerCase().replace(/\W+/g, '-')}`
+  const entrada = (
+    <>
+      <input id={campo} aria-invalid={error ? true : undefined} aria-describedby={error ? `${campo}-erro` : undefined} {...input} />
+      {error && <div id={`${campo}-erro`} className="field-error">{error}</div>}
+      {hint && !error && <div className="field-hint">{hint}</div>}
+    </>
+  )
+  return layout === 'row' ? (
+    <div className="field-row">
+      <label className="field-row__lbl" htmlFor={campo}>{label}:</label>
+      <div className="field-row__val">{entrada}</div>
+    </div>
+  ) : (
+    <div className="fg">
+      <label htmlFor={campo}>{label}</label>
+      {entrada}
+    </div>
+  )
+}
+
+=== Input Text | field.css
+/* Rótulo em cima (.fg) — formulários de detalhe */
+.fg { display: flex; flex-direction: column; gap: 5px; }
+.fg > label { font-size: 10.5px; font-weight: 700; color: var(--c-text-muted); text-transform: uppercase; letter-spacing: .5px; }
+.fg input, .fg select {
+  height: 34px; width: 100%; padding: 0 18px;
+  border: 1.5px solid var(--c-border); border-radius: 7px; background: var(--c-surface);
+  font: 400 13px 'Inter', sans-serif; color: var(--c-text); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.fg textarea {
+  width: 100%; padding: 8px 12px; resize: vertical;
+  border: 1.5px solid var(--c-border); border-radius: 7px; background: var(--c-surface);
+  font: 400 13px/1.5 'Inter', sans-serif; color: var(--c-text); outline: none;
+}
+
+/* Rótulo ao lado (.field-row) — filtros. Rótulo de 150px; quebra no mobile. */
+.field-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 32px; min-width: 0; }
+.field-row__lbl { width: 150px; flex-shrink: 0; white-space: nowrap; font-size: 12px; font-weight: 600; color: var(--c-table-head-txt); }
+.field-row__val { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.field-row__val input, .field-row__val select, .field-row__val textarea {
+  height: 32px; flex: 1; min-width: 0; padding: 0 16px;
+  border: 1.5px solid var(--c-border); border-radius: 6px; background: var(--c-surface);
+  font: 400 12.5px 'Inter', sans-serif; color: var(--c-table-head-txt);
+}
+.field-row__val textarea { height: auto; padding: 8px 16px; }
+.field-row__val select { cursor: pointer; flex: 0 1 auto; }   /* select não estica sozinho: use style={{ flex: 1 }} quando precisar */
+
+/* Estados globais — valem para input, select e textarea */
+:is(input, select, textarea):not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color']):focus,
+.field-wrap:focus-within { border-color: var(--c-support) !important; box-shadow: none !important; outline: none; }
+
+:is(input, select, textarea)[aria-invalid='true'] { border-color: var(--c-input-error) !important; }
+.field-error { margin-top: 8px; font-size: 12px; line-height: 1; color: var(--c-input-error); }
+.field-hint  { margin-top: 6px; font-size: 11.5px; color: var(--c-text-muted); }
+
+:is(input, select, textarea):not([type='checkbox'], [type='radio']):disabled,
+.field-wrap:has(:disabled) {
+  border-color: var(--c-input-border-disabled) !important; background-color: var(--c-input-bg-disabled) !important;
+  color: var(--c-input-text-disabled) !important; cursor: not-allowed;
+}
+
+/* Todo <select>: caret próprio a 12px da borda (o nativo encostava). A cor do SVG não aceita var(): ajuste no escuro. */
+select:not([multiple], [size]) {
+  appearance: none; padding-right: 36px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 256 256'%3E%3Cpath fill='%236B7280' d='M213.66 101.66l-80 80a8 8 0 0 1-11.32 0l-80-80a8 8 0 0 1 11.32-11.32L128 164.69l74.34-74.35a8 8 0 0 1 11.32 11.32Z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important; background-position: right 12px center !important; background-size: 12px 12px !important;
+}
+
+/* Wrapper com borda própria (campo com ícone ou chips + input sem borda): className="field-wrap" */
+/* Checkbox/radio inline */
+.check-lbl { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--c-table-head-txt); white-space: nowrap; }
+/* Opções em segmentos (poucas opções lado a lado) */
+.seg-opcoes { display: flex; gap: 8px; }
+.seg-opcoes > button { flex: 1; height: 36px; border: 1px solid var(--c-border); border-radius: 8px; background: var(--c-surface-2); color: var(--c-text); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+=== Input Text | Uso.tsx
+<Field label="Número do processo" placeholder="Ex.: 912345678" />
+<Field label="Responsável" layout="row" />
+<Field label="Número do processo" value="12345" error="Informe 9 dígitos." />
+<Field label="Nome" disabled value="Somente leitura" />
+
+{/* select dentro de .field-row__val precisa de flex: 1 explícito */}
+<div className="field-row">
+  <label className="field-row__lbl">Situação:</label>
+  <div className="field-row__val"><select style={{ flex: 1 }}><option>Todas</option></select></div>
+</div>
+
+=== Switch | Switch.tsx
+/** Liga/desliga. role="switch" + aria-checked; estilo inline porque não há classe global. */
+export function Switch({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label?: string }) {
+  return (
+    <button
+      type="button" role="switch" aria-checked={checked} aria-label={label}
+      onClick={() => onChange(!checked)}
+      style={{
+        width: 34, height: 19, borderRadius: 10, border: 'none', flexShrink: 0, cursor: 'pointer',
+        background: checked ? 'var(--c-support)' : 'var(--c-border)',     /* ligado = cor de destaque do tema */
+        position: 'relative', transition: 'background .15s',
+      }}
+    >
+      <span style={{
+        position: 'absolute', top: 2, left: checked ? 17 : 2, width: 15, height: 15, borderRadius: '50%',
+        background: 'var(--c-surface)', boxShadow: 'var(--shadow-sm)', transition: 'left .15s',
+      }} />
+    </button>
+  )
+}
+
+=== Switch | Uso.tsx
+const [ativo, setAtivo] = useState(true)
+<Switch checked={ativo} onChange={setAtivo} label="Receber alertas" />
+
+=== Date picker | abrirSeletorDeData.ts
+/** Abre o datepicker nativo ao clicar em qualquer parte do campo (não só no ícone). */
+export function abrirSeletorDeData(e: React.MouseEvent<HTMLInputElement>) { e.currentTarget.showPicker?.() }
+
+/** "Até" vazio = até hoje — nunca bloqueia a pesquisa. */
+export const ateOuHoje = (ate: string) => ate || hojeLocalIso()
+
+/** Hoje em ISO no fuso LOCAL. (toISOString() é UTC e à noite no Brasil já devolve amanhã.) */
+export function hojeLocalIso(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+=== Date picker | Uso.tsx
+{/* Período (De → Até) */}
+const [periodo, setPeriodo] = useState<Periodo>({ de: '', ate: '' })
+<SeletorDePeriodo valor={periodo} onChange={setPeriodo} ariaLabel="Data de Registro" />
+
+{/* Data única */}
+const [data, setData] = useState('')
+<SeletorDeData valor={data} onChange={setData} ariaLabel="Vencimento" />
+
+{/* Props de SeletorDePeriodo: valor, onChange, className, disabled, min, max, ariaLabel, inputClassName
+    Props de SeletorDeData: valor, onChange, className, ariaLabel, id, disabled, readOnly, min, max, inputClassName,
+    compacto (28px, dentro de linha de tabela), title, onBlur, onEscolher (só ao escolher no calendário, não ao digitar)
+    valor: ISO AAAA-MM-DD ("" = vazio) · min/max: dias fora ficam desabilitados */}
+
+{/* Campo simples, sem calendário próprio: o nativo + abrirSeletorDeData */}
+<input type="date" onClick={abrirSeletorDeData} />
+
+=== x-autocomplete | Autocomplete.tsx
+/* Autocomplete feito à mão, sem lib. Três pegadinhas obrigatórias:
+   1) escolher com onMouseDown (onClick chega depois do blur e perde o item);
+   2) onBlur com atraso (setTimeout 150) para o mousedown acontecer antes de fechar;
+   3) interceptar Enter para não submeter o formulário. */
+import { useState } from 'react'
+
+interface Item { id: string; nome: string }
+
+export function Autocomplete({ itens, onEscolher, placeholder }: { itens: Item[]; onEscolher: (i: Item) => void; placeholder?: string }) {
+  const [texto, setTexto] = useState('')
+  const [aberto, setAberto] = useState(false)
+  const filtrados = itens.filter(i => i.nome.toLowerCase().includes(texto.toLowerCase()))
+
+  return (
+    <div style={{ position: 'relative', flex: 1 }}>                       {/* wrapper precisa de position: relative */}
+      <input
+        value={texto} placeholder={placeholder}
+        onChange={e => { setTexto(e.target.value); setAberto(true) }}
+        onFocus={() => setAberto(true)}
+        onBlur={() => setTimeout(() => setAberto(false), 150)}
+        onKeyDown={e => { if (e.key === 'Enter' && aberto) e.preventDefault() }}
+      />
+      {aberto && (
+        <div className="ac-lista" role="listbox">
+          {filtrados.map(i => (
+            <div key={i.id} role="option" className="ac-item" onMouseDown={() => { onEscolher(i); setTexto(i.nome); setAberto(false) }}>{i.nome}</div>
+          ))}
+          {filtrados.length === 0 && <div className="ac-msg">Nenhum resultado</div>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+=== x-autocomplete | autocomplete.css
+.ac-lista {
+  position: absolute; top: calc(100% + 2px); left: 0; right: 0; z-index: 20;
+  background: var(--c-surface); border: 1.5px solid var(--c-border); border-radius: 6px;
+  box-shadow: var(--shadow-md); max-height: 220px; overflow-y: auto;
+}
+.ac-item { padding: 8px 16px; font-size: 12.5px; color: var(--c-table-head-txt); cursor: pointer; }
+.ac-item:hover { background: var(--c-surface-2); }
+.ac-msg { padding: 8px 16px; font-size: 12px; color: var(--c-text-muted); }
+
+=== x-multiselect | PopoverMultiSelect.tsx
+/* Botão que abre painel de checkboxes com "Todos" no topo. O painel vai para PORTAL porque o card de
+   filtros tem overflow e cortaria um painel absoluto; abre para cima se faltar espaço embaixo. */
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { CaretDown } from '@phosphor-icons/react'
+
+const ALTURA_MAXIMA = 260
+
+function usePosicaoPopover(aberto: boolean, gatilho: React.RefObject<HTMLElement | null>) {
+  const [pos, setPos] = useState<{ top: number; left: number; width: number; bottom: number; paraCima: boolean; maxHeight: number } | null>(null)
+  useEffect(() => {
+    if (!aberto) return
+    function atualizar() {
+      const r = gatilho.current?.getBoundingClientRect()
+      if (!r) return
+      const abaixo = window.innerHeight - r.bottom - 12, acima = r.top - 12
+      const paraCima = abaixo < 180 && acima > abaixo
+      setPos({ top: r.bottom + 4, left: r.left, width: r.width, bottom: window.innerHeight - r.top + 4, paraCima,
+        maxHeight: Math.max(120, Math.min(ALTURA_MAXIMA, paraCima ? acima : abaixo)) })
+    }
+    atualizar()
+    window.addEventListener('scroll', atualizar, true)
+    window.addEventListener('resize', atualizar)
+    return () => { window.removeEventListener('scroll', atualizar, true); window.removeEventListener('resize', atualizar) }
+  }, [aberto, gatilho])
+  return pos
+}
+
+export interface Opcao { chave: string; rotulo: string }
+
+export function PopoverMultiSelect({ opcoes, selecionados, singular, plural, zIndex, onToggle, onToggleTodos }: {
+  opcoes: Opcao[]; selecionados: string[]; singular: string; plural: string
+  zIndex?: number                      // dentro de drawer (z 8001+) o padrão (40) ficaria por baixo
+  onToggle: (chave: string) => void; onToggleTodos: () => void
+}) {
+  const [aberto, setAberto] = useState(false)
+  const caixa = useRef<HTMLDivElement>(null), botao = useRef<HTMLButtonElement>(null), painel = useRef<HTMLDivElement>(null)
+  const pos = usePosicaoPopover(aberto, botao)
+  const todos = opcoes.length > 0 && selecionados.length === opcoes.length
+
+  useEffect(() => {
+    if (!aberto) return
+    const fora = (e: MouseEvent) => { const a = e.target as Node; if (!caixa.current?.contains(a) && !painel.current?.contains(a)) setAberto(false) }
+    document.addEventListener('mousedown', fora)
+    return () => document.removeEventListener('mousedown', fora)
+  }, [aberto])
+
+  const rotulo = selecionados.length === 0 ? 'Selecione' : `${selecionados.length.toLocaleString('pt-BR')} ${selecionados.length === 1 ? singular : plural}`
+
+  return (
+    <div ref={caixa} style={{ position: 'relative', flex: 1 }}>
+      <button ref={botao} type="button" className="ms-btn" onClick={() => setAberto(v => !v)}>
+        <span className="ms-btn__txt">{rotulo}</span><CaretDown size={12} weight="bold" />
+      </button>
+      {aberto && pos && createPortal(
+        <div ref={painel} className="ms-painel"
+          style={{ position: 'fixed', left: pos.left, width: pos.width, zIndex, maxHeight: pos.maxHeight,
+            ...(pos.paraCima ? { bottom: pos.bottom } : { top: pos.top }) }}>
+          <div className="ms-item ms-item--todos" onClick={onToggleTodos}><input type="checkbox" checked={todos} readOnly /> Todos</div>
+          {opcoes.map(o => (
+            <div key={o.chave} className="ms-item" onClick={() => onToggle(o.chave)}>
+              <input type="checkbox" checked={selecionados.includes(o.chave)} readOnly /> {o.rotulo}
+            </div>
+          ))}
+        </div>, document.body)}
+    </div>
+  )
+}
+
+=== x-multiselect | multiselect.css
+.ms-btn {
+  width: 100%; height: 36px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border: 1.5px solid var(--c-border); border-radius: 8px; background: var(--c-surface);
+  font: 400 13px 'Inter', sans-serif; color: var(--c-text); text-align: left; cursor: pointer;
+}
+.ms-btn:hover { border-color: var(--c-support); }
+.ms-btn__txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ms-painel {
+  z-index: 40; overflow-y: auto; padding: 8px;
+  background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 10px; box-shadow: var(--shadow-lg);
+}
+.ms-item { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 6px; font-size: 12.5px; color: var(--c-text); cursor: pointer; }
+.ms-item:hover { background: var(--c-surface-2); }
+.ms-item--todos { font-weight: 700; border-bottom: 1px solid var(--c-border); margin-bottom: 4px; padding-bottom: 9px; border-radius: 0; }
+
+=== x-multiselect | Uso.tsx
+<PopoverMultiSelect
+  opcoes={[{ chave: 'a', rotulo: 'Grupo A' }, { chave: 'b', rotulo: 'Grupo B' }]}
+  selecionados={sel} singular="grupo" plural="grupos"
+  onToggle={k => setSel(s => s.includes(k) ? s.filter(x => x !== k) : [...s, k])}
+  onToggleTodos={() => setSel(s => s.length === 2 ? [] : ['a', 'b'])}
+/>
+
+=== x-dropzone | AnexoDropzone.tsx
+import { useRef, useState } from 'react'
+import { UploadSimple } from '@phosphor-icons/react'
+
+export function AnexoDropzone({ arquivo, accept, onSelecionar }: { arquivo: File | null; accept: string; onSelecionar: (f: File | null) => void }) {
+  const [arrastando, setArrastando] = useState(false)
+  const input = useRef<HTMLInputElement>(null)
+
+  return (
+    <div
+      role="button" tabIndex={0}
+      className={`dz${arrastando ? ' dz--sobre' : ''}`}
+      onClick={() => input.current?.click()}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') input.current?.click() }}
+      onDragOver={e => { e.preventDefault(); setArrastando(true) }}
+      onDragLeave={() => setArrastando(false)}
+      onDrop={e => { e.preventDefault(); setArrastando(false); onSelecionar(e.dataTransfer.files?.[0] ?? null) }}
+    >
+      <UploadSimple size={22} />
+      <p style={{ margin: 0, fontSize: 12.5, fontWeight: arquivo ? 600 : 400 }}>
+        {arquivo ? arquivo.name : 'Arraste o arquivo aqui ou clique para selecionar'}
+      </p>
+      <input ref={input} type="file" accept={accept} hidden
+        onClick={e => e.stopPropagation()} onChange={e => onSelecionar(e.target.files?.[0] ?? null)} />
+    </div>
+  )
+}
+
+=== x-dropzone | dropzone.css
+.dz {
+  display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px 14px; cursor: pointer;
+  border: 1.5px dashed var(--c-border); border-radius: 8px; background: var(--c-surface-2);
+  color: var(--c-text-muted); transition: background .15s, border-color .15s;
+}
+.dz p { color: var(--c-text); }
+.dz--sobre { border-color: var(--c-support); background: color-mix(in srgb, var(--c-support) 6%, var(--c-surface)); color: var(--c-support); }
+
+=== x-dropzone | Uso.tsx
+<AnexoDropzone arquivo={arquivo} accept=".pdf,.png,.jpg" onSelecionar={setArquivo} />
+
+=== c-filtros | CardDeFiltros.tsx
+/* Card colapsável e STICKY (acompanha a rolagem dos resultados), com rodapé fixo.
+   Estrutura: .mf-card › .mf-card-hdr (clicável) + form.mf-card-form › .mf-card-scroll (única área que rola) + .mf-footer */
+import { CaretDown, CaretUp } from '@phosphor-icons/react'
+import { useState, type FormEvent, type ReactNode } from 'react'
+
+export function CardDeFiltros({ children, onPesquisar, onLimpar, pesquisando }: {
+  children: ReactNode; onPesquisar: (e: FormEvent) => void; onLimpar: () => void; pesquisando?: boolean
+}) {
+  const [aberto, setAberto] = useState(true)
+  return (
+    <div className="mf-card">
+      <div className="mf-card-hdr" onClick={() => setAberto(v => !v)}>
+        Filtros de Pesquisa
+        {aberto ? <CaretUp size={14} style={{ marginLeft: 'auto' }} /> : <CaretDown size={14} style={{ marginLeft: 'auto' }} />}
+      </div>
+      {aberto && (
+        <form className="mf-card-form" onSubmit={e => { onPesquisar(e); setAberto(false) }}>   {/* pesquisar fecha o card */}
+          <div className="mf-card-scroll" style={{ padding: 16 }}>{children}</div>
+          <div className="mf-footer">
+            <Button variant="outline" tone="neutral" onClick={onLimpar}>Limpar</Button>
+            <Button type="submit" disabled={pesquisando}>Pesquisar</Button>
+          </div>
+        </form>
+      )}
+    </div>
+  )
+}
+
+=== c-filtros | filtros.css
+.mf-card {
+  position: sticky; top: -19px; z-index: 10;               /* -19px compensa o padding de 20px do <main> */
+  display: flex; flex-direction: column; flex-shrink: 0; margin-bottom: 14px; overflow: hidden;
+  background: var(--c-surface); border-radius: 10px; box-shadow: var(--shadow-sm);
+  max-height: calc(100vh - 76px); max-height: calc(100dvh - 76px);   /* 76 = topbar 56 + folga 20 */
+}
+.mf-card-hdr { display: flex; align-items: center; gap: 8px; padding: 16px 24px; flex-shrink: 0; cursor: pointer; user-select: none; font-size: 13px; font-weight: 700; color: var(--c-brand); }
+.mf-card-form   { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+.mf-card-scroll { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; min-height: 0; }
+.mf-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+.mf-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; }      /* min-width:0 é obrigatório: grid precisa encolher */
+@media (max-width: 900px) { .mf-two-col { grid-template-columns: 1fr; } }
+.mf-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 24px; flex-shrink: 0; border-top: 1px solid var(--c-border-soft); background: var(--c-surface); }
+
+/* "Mais filtros" (accordion só com CSS) */
+.mf-more-body { max-height: 0; overflow: hidden; transition: max-height .4s ease; }
+.mf-more-body.open { max-height: 2400px; }
+.mf-sec-hdr { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; border-bottom: 2px solid var(--c-border-soft); }
+
+=== c-filtros | Estado.tsx
+/* A TRÍADE do filtro (obrigatória em toda listagem):
+   - filtroForm      o que está sendo digitado — nunca dispara busca
+   - filtroAplicado  snapshot do clique em Pesquisar — é o que vai na queryKey
+   - buscou          nada é buscado antes da 1ª pesquisa */
+const [filtroForm, setFiltroForm] = useState<Filtro>(FILTRO_VAZIO)
+const [filtroAplicado, setFiltroAplicado] = useState<Filtro>(FILTRO_VAZIO)
+const [buscou, setBuscou] = useState(false)
+
+function atualizarFiltro<K extends keyof Filtro>(campo: K, valor: Filtro[K]) {
+  setFiltroForm(prev => ({ ...prev, [campo]: valor }))
+}
+function pesquisar(e: React.FormEvent) {
+  e.preventDefault()
+  setFiltroAplicado(filtroForm); setPagina(1); setBuscou(true); setFiltroAberto(false)
+}
+function limpar() { setFiltroForm(FILTRO_VAZIO) }          // não dispara busca

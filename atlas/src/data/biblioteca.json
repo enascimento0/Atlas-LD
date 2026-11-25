@@ -1,0 +1,1902 @@
+{
+  "arquivo": "DS - Biblioteca de componentes",
+  "exportado": "2026-11-12",
+  "cores": [
+    {
+      "nome": "Brand Primary/700",
+      "hex": "#A07300",
+      "opacidade": 1,
+      "grupo": "Brand Primary"
+    },
+    {
+      "nome": "Brand Primary/600",
+      "hex": "#FFC300",
+      "opacidade": 1,
+      "grupo": "Brand Primary"
+    },
+    {
+      "nome": "Brand Primary/500",
+      "hex": "#FFE600",
+      "opacidade": 1,
+      "grupo": "Brand Primary"
+    },
+    {
+      "nome": "Brand Primary/400",
+      "hex": "#FFEB6E",
+      "opacidade": 1,
+      "grupo": "Brand Primary"
+    },
+    {
+      "nome": "Brand Primary/300",
+      "hex": "#FFF5C3",
+      "opacidade": 1,
+      "grupo": "Brand Primary"
+    },
+    {
+      "nome": "Brand Secondary/700",
+      "hex": "#05004B",
+      "opacidade": 1,
+      "grupo": "Brand Secondary"
+    },
+    {
+      "nome": "Brand Secondary/600",
+      "hex": "#050091",
+      "opacidade": 1,
+      "grupo": "Brand Secondary"
+    },
+    {
+      "nome": "Brand Secondary/500",
+      "hex": "#0A00B4",
+      "opacidade": 1,
+      "grupo": "Brand Secondary"
+    },
+    {
+      "nome": "Brand Secondary/400",
+      "hex": "#645AD7",
+      "opacidade": 1,
+      "grupo": "Brand Secondary"
+    },
+    {
+      "nome": "Brand Secondary/300",
+      "hex": "#B4B4F0",
+      "opacidade": 1,
+      "grupo": "Brand Secondary"
+    },
+    {
+      "nome": "Success/700",
+      "hex": "#007341",
+      "opacidade": 1,
+      "grupo": "Success"
+    },
+    {
+      "nome": "Success/600",
+      "hex": "#00A55A",
+      "opacidade": 1,
+      "grupo": "Success"
+    },
+    {
+      "nome": "Success/500",
+      "hex": "#14D264",
+      "opacidade": 1,
+      "grupo": "Success"
+    },
+    {
+      "nome": "Success/400",
+      "hex": "#37E69B",
+      "opacidade": 1,
+      "grupo": "Success"
+    },
+    {
+      "nome": "Success/300",
+      "hex": "#6EF0BE",
+      "opacidade": 1,
+      "grupo": "Success"
+    },
+    {
+      "nome": "Info/700",
+      "hex": "#41649B",
+      "opacidade": 1,
+      "grupo": "Info"
+    },
+    {
+      "nome": "Info/600",
+      "hex": "#5A87CD",
+      "opacidade": 1,
+      "grupo": "Info"
+    },
+    {
+      "nome": "Info/500",
+      "hex": "#6EAAFF",
+      "opacidade": 1,
+      "grupo": "Info"
+    },
+    {
+      "nome": "Info/400",
+      "hex": "#A0C8FF",
+      "opacidade": 1,
+      "grupo": "Info"
+    },
+    {
+      "nome": "Info/300",
+      "hex": "#D2E6FF",
+      "opacidade": 1,
+      "grupo": "Info"
+    },
+    {
+      "nome": "Warning/700",
+      "hex": "#964614",
+      "opacidade": 1,
+      "grupo": "Warning"
+    },
+    {
+      "nome": "Warning/600",
+      "hex": "#CD5F19",
+      "opacidade": 1,
+      "grupo": "Warning"
+    },
+    {
+      "nome": "Warning/500",
+      "hex": "#FF7323",
+      "opacidade": 1,
+      "grupo": "Warning"
+    },
+    {
+      "nome": "Warning/400",
+      "hex": "#FFA573",
+      "opacidade": 1,
+      "grupo": "Warning"
+    },
+    {
+      "nome": "Warning/300",
+      "hex": "#FFD2C3",
+      "opacidade": 1,
+      "grupo": "Warning"
+    },
+    {
+      "nome": "Danger/700",
+      "hex": "#A52328",
+      "opacidade": 1,
+      "grupo": "Danger"
+    },
+    {
+      "nome": "Danger/600",
+      "hex": "#D22D37",
+      "opacidade": 1,
+      "grupo": "Danger"
+    },
+    {
+      "nome": "Danger/500",
+      "hex": "#FF3746",
+      "opacidade": 1,
+      "grupo": "Danger"
+    },
+    {
+      "nome": "Danger/400",
+      "hex": "#FF7D82",
+      "opacidade": 1,
+      "grupo": "Danger"
+    },
+    {
+      "nome": "Danger/300",
+      "hex": "#FFBEC3",
+      "opacidade": 1,
+      "grupo": "Danger"
+    },
+    {
+      "nome": "Gray/900",
+      "hex": "#3A3A48",
+      "opacidade": 1,
+      "grupo": "Gray"
+    },
+    {
+      "nome": "Gray/800",
+      "hex": "#4D4D5E",
+      "opacidade": 1,
+      "grupo": "Gray"
+    },
+    {
+      "nome": "Gray/700",
+      "hex": "#626275",
+      "opacidade": 1,
+      "grupo": "Gray"
+    },
+    {
+      "nome": "Gray/600",
+      "hex": "#78788C",
+      "opacidade": 1,
+      "grupo": "Gray"
+    },
+    {
+      "nome": "Gray/500",
+      "hex": "#8E8EA2",
+      "opacidade": 1,
+      "grupo": "Gray"
+    },
+    {
+      "nome": "Gray/400",
+      "hex": "#A5A5B9",
+      "opacidade": 1,
+      "grupo": "Gray"
+    },
+    {
+      "nome": "Gray/300",
+      "hex": "#BDBDD0",
+      "opacidade": 1,
+      "grupo": "Gray"
+    },
+    {
+      "nome": "Gray/200",
+      "hex": "#D6D6E6",
+      "opacidade": 1,
+      "grupo": "Gray"
+    },
+    {
+      "nome": "Gray/100",
+      "hex": "#EFEFFD",
+      "opacidade": 1,
+      "grupo": "Gray"
+    },
+    {
+      "nome": "Black & White/Black",
+      "hex": "#000014",
+      "opacidade": 1,
+      "grupo": "Black & White"
+    },
+    {
+      "nome": "Black & White/White",
+      "hex": "#FFFFFF",
+      "opacidade": 1,
+      "grupo": "Black & White"
+    },
+    {
+      "nome": "Highlight/01/700",
+      "hex": "#5A6E00",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/01/600",
+      "hex": "#82A500",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/01/500",
+      "hex": "#AFD700",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/01/400",
+      "hex": "#C8E13C",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/01/300",
+      "hex": "#E1EB78",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/02/700",
+      "hex": "#005A00",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/02/600",
+      "hex": "#009100",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/02/500",
+      "hex": "#00C800",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/02/400",
+      "hex": "#4BE641",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/02/300",
+      "hex": "#A0E6AF",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/03/700",
+      "hex": "#004646",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/03/600",
+      "hex": "#00877D",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/03/500",
+      "hex": "#00AFAF",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/03/400",
+      "hex": "#3CC8C8",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/03/300",
+      "hex": "#78DCDC",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/04/700",
+      "hex": "#006482",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/04/600",
+      "hex": "#00AAB9",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/04/500",
+      "hex": "#00D2E6",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/04/400",
+      "hex": "#55EBF5",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/04/300",
+      "hex": "#AAFAFF",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/05/700",
+      "hex": "#3C2D9B",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/05/600",
+      "hex": "#503CCD",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/05/500",
+      "hex": "#6446FF",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/05/400",
+      "hex": "#9B8CFF",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/05/300",
+      "hex": "#CDCDFF",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/06/700",
+      "hex": "#6E329B",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/06/600",
+      "hex": "#9141CD",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/06/500",
+      "hex": "#B450FF",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/06/400",
+      "hex": "#D28CFF",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/06/300",
+      "hex": "#EBC8FF",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/07/700",
+      "hex": "#821E91",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/07/600",
+      "hex": "#B428C8",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/07/500",
+      "hex": "#E632FA",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/07/400",
+      "hex": "#EB7DFA",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Highlight/07/300",
+      "hex": "#F0C8F5",
+      "opacidade": 1,
+      "grupo": "Highlight"
+    },
+    {
+      "nome": "Mendix Blue/Primary",
+      "hex": "#146FF4",
+      "opacidade": 1,
+      "grupo": "Mendix Blue"
+    },
+    {
+      "nome": "Midnight",
+      "hex": "#0A1324",
+      "opacidade": 1,
+      "grupo": "Midnight"
+    },
+    {
+      "nome": "Gray/50",
+      "hex": "#F6F6FF",
+      "opacidade": 1,
+      "grupo": "Gray"
+    },
+    {
+      "nome": "Black/100",
+      "hex": "#000014",
+      "opacidade": 0.7,
+      "grupo": "Black"
+    },
+    {
+      "nome": "Black/200",
+      "hex": "#000014",
+      "opacidade": 0.6,
+      "grupo": "Black"
+    },
+    {
+      "nome": "Black/300",
+      "hex": "#000014",
+      "opacidade": 0.4,
+      "grupo": "Black"
+    },
+    {
+      "nome": "Black/400",
+      "hex": "#000014",
+      "opacidade": 0.15,
+      "grupo": "Black"
+    },
+    {
+      "nome": "White/100",
+      "hex": "#FFFFFF",
+      "opacidade": 0.7,
+      "grupo": "White"
+    },
+    {
+      "nome": "White/200",
+      "hex": "#FFFFFF",
+      "opacidade": 0.6,
+      "grupo": "White"
+    },
+    {
+      "nome": "White/300",
+      "hex": "#FFFFFF",
+      "opacidade": 0.4,
+      "grupo": "White"
+    },
+    {
+      "nome": "White/400",
+      "hex": "#FFFFFF",
+      "opacidade": 0.15,
+      "grupo": "White"
+    }
+  ],
+  "textos": [
+    {
+      "nome": "Web/Headlines/H1 Bold",
+      "categoria": "Headlines",
+      "rotulo": "H1 Bold",
+      "familia": "Ubuntu",
+      "peso": "Bold",
+      "tamanho": 48,
+      "alturaLinha": 1.15
+    },
+    {
+      "nome": "Web/Headlines/H1 Light",
+      "categoria": "Headlines",
+      "rotulo": "H1 Light",
+      "familia": "Ubuntu",
+      "peso": "Light",
+      "tamanho": 48,
+      "alturaLinha": 1.15
+    },
+    {
+      "nome": "Web/Headlines/H1 Regular",
+      "categoria": "Headlines",
+      "rotulo": "H1 Regular",
+      "familia": "Ubuntu",
+      "peso": "Regular",
+      "tamanho": 48,
+      "alturaLinha": 1.15
+    },
+    {
+      "nome": "Web/Headlines/H2 Bold",
+      "categoria": "Headlines",
+      "rotulo": "H2 Bold",
+      "familia": "Ubuntu",
+      "peso": "Bold",
+      "tamanho": 40,
+      "alturaLinha": 1.15
+    },
+    {
+      "nome": "Web/Headlines/H2 Light",
+      "categoria": "Headlines",
+      "rotulo": "H2 Light",
+      "familia": "Ubuntu",
+      "peso": "Light",
+      "tamanho": 40,
+      "alturaLinha": 1.15
+    },
+    {
+      "nome": "Web/Headlines/H2 Regular",
+      "categoria": "Headlines",
+      "rotulo": "H2 Regular",
+      "familia": "Ubuntu",
+      "peso": "Regular",
+      "tamanho": 40,
+      "alturaLinha": 1.15
+    },
+    {
+      "nome": "Web/Headlines/H3 Bold",
+      "categoria": "Headlines",
+      "rotulo": "H3 Bold",
+      "familia": "Ubuntu",
+      "peso": "Bold",
+      "tamanho": 32,
+      "alturaLinha": 1.15
+    },
+    {
+      "nome": "Web/Headlines/H3 Light",
+      "categoria": "Headlines",
+      "rotulo": "H3 Light",
+      "familia": "Ubuntu",
+      "peso": "Light",
+      "tamanho": 32,
+      "alturaLinha": 1.15
+    },
+    {
+      "nome": "Web/Headlines/H3 Regular",
+      "categoria": "Headlines",
+      "rotulo": "H3 Regular",
+      "familia": "Ubuntu",
+      "peso": "Regular",
+      "tamanho": 32,
+      "alturaLinha": 1.15
+    },
+    {
+      "nome": "Web/Headlines/H4 Bold",
+      "categoria": "Headlines",
+      "rotulo": "H4 Bold",
+      "familia": "Ubuntu",
+      "peso": "Bold",
+      "tamanho": 28,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H4 Light",
+      "categoria": "Headlines",
+      "rotulo": "H4 Light",
+      "familia": "Ubuntu",
+      "peso": "Light",
+      "tamanho": 28,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H4 Regular",
+      "categoria": "Headlines",
+      "rotulo": "H4 Regular",
+      "familia": "Ubuntu",
+      "peso": "Regular",
+      "tamanho": 28,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H5 Bold",
+      "categoria": "Headlines",
+      "rotulo": "H5 Bold",
+      "familia": "Ubuntu",
+      "peso": "Bold",
+      "tamanho": 24,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H5 Light",
+      "categoria": "Headlines",
+      "rotulo": "H5 Light",
+      "familia": "Ubuntu",
+      "peso": "Light",
+      "tamanho": 24,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H5 Regular",
+      "categoria": "Headlines",
+      "rotulo": "H5 Regular",
+      "familia": "Ubuntu",
+      "peso": "Regular",
+      "tamanho": 24,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H6 Bold",
+      "categoria": "Headlines",
+      "rotulo": "H6 Bold",
+      "familia": "Ubuntu",
+      "peso": "Bold",
+      "tamanho": 22,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H6 Light",
+      "categoria": "Headlines",
+      "rotulo": "H6 Light",
+      "familia": "Ubuntu",
+      "peso": "Light",
+      "tamanho": 22,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H6 Regular",
+      "categoria": "Headlines",
+      "rotulo": "H6 Regular",
+      "familia": "Ubuntu",
+      "peso": "Regular",
+      "tamanho": 22,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H7 Bold",
+      "categoria": "Headlines",
+      "rotulo": "H7 Bold",
+      "familia": "Ubuntu",
+      "peso": "Bold",
+      "tamanho": 20,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H7 Light",
+      "categoria": "Headlines",
+      "rotulo": "H7 Light",
+      "familia": "Ubuntu",
+      "peso": "Light",
+      "tamanho": 20,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Headlines/H7 Regular",
+      "categoria": "Headlines",
+      "rotulo": "H7 Regular",
+      "familia": "Ubuntu",
+      "peso": "Regular",
+      "tamanho": 20,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Subtitles/Subtitle 1 Bold",
+      "categoria": "Subtitles",
+      "rotulo": "Subtitle 1 Bold",
+      "familia": "Ubuntu",
+      "peso": "Bold",
+      "tamanho": 18,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Subtitles/Subtitle 1 Regular",
+      "categoria": "Subtitles",
+      "rotulo": "Subtitle 1 Regular",
+      "familia": "Ubuntu",
+      "peso": "Regular",
+      "tamanho": 18,
+      "alturaLinha": 1.2
+    },
+    {
+      "nome": "Web/Subtitles/Subtitle 2 Bold",
+      "categoria": "Subtitles",
+      "rotulo": "Subtitle 2 Bold",
+      "familia": "Ubuntu",
+      "peso": "Bold",
+      "tamanho": 16,
+      "alturaLinha": 1.5
+    },
+    {
+      "nome": "Web/Subtitles/Subtitle 2 Regular",
+      "categoria": "Subtitles",
+      "rotulo": "Subtitle 2 Regular",
+      "familia": "Ubuntu",
+      "peso": "Regular",
+      "tamanho": 16,
+      "alturaLinha": 1.5
+    },
+    {
+      "nome": "Web/Paragraph/Paragraph 1 Bold",
+      "categoria": "Paragraph",
+      "rotulo": "Paragraph 1 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 16,
+      "alturaLinha": 1.5
+    },
+    {
+      "nome": "Web/Paragraph/Paragraph 1 Regular",
+      "categoria": "Paragraph",
+      "rotulo": "Paragraph 1 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 16,
+      "alturaLinha": 1.5
+    },
+    {
+      "nome": "Web/Paragraph/Paragraph 2 Bold",
+      "categoria": "Paragraph",
+      "rotulo": "Paragraph 2 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 14,
+      "alturaLinha": 1.5
+    },
+    {
+      "nome": "Web/Paragraph/Paragraph 2 Regular",
+      "categoria": "Paragraph",
+      "rotulo": "Paragraph 2 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 14,
+      "alturaLinha": 1.5
+    },
+    {
+      "nome": "Web/Paragraph/Paragraph 3 Bold",
+      "categoria": "Paragraph",
+      "rotulo": "Paragraph 3 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 12,
+      "alturaLinha": 1.5
+    },
+    {
+      "nome": "Web/Paragraph/Paragraph 3 Regular",
+      "categoria": "Paragraph",
+      "rotulo": "Paragraph 3 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 12,
+      "alturaLinha": 1.5
+    },
+    {
+      "nome": "Web/Labels/Label 1 Bold",
+      "categoria": "Labels",
+      "rotulo": "Label 1 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 32,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 1 Regular",
+      "categoria": "Labels",
+      "rotulo": "Label 1 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 32,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 2 Bold",
+      "categoria": "Labels",
+      "rotulo": "Label 2 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 28,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 2 Regular",
+      "categoria": "Labels",
+      "rotulo": "Label 2 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 28,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 3 Bold",
+      "categoria": "Labels",
+      "rotulo": "Label 3 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 24,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 3 Regular",
+      "categoria": "Labels",
+      "rotulo": "Label 3 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 24,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 4 Bold",
+      "categoria": "Labels",
+      "rotulo": "Label 4 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 22,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 4 Regular",
+      "categoria": "Labels",
+      "rotulo": "Label 4 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 22,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 5 Bold",
+      "categoria": "Labels",
+      "rotulo": "Label 5 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 20,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 5 Regular",
+      "categoria": "Labels",
+      "rotulo": "Label 5 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 20,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 6 Bold",
+      "categoria": "Labels",
+      "rotulo": "Label 6 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 18,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 6 Regular",
+      "categoria": "Labels",
+      "rotulo": "Label 6 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 18,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 7 Bold",
+      "categoria": "Labels",
+      "rotulo": "Label 7 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 16,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 7 Regular",
+      "categoria": "Labels",
+      "rotulo": "Label 7 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 16,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 8 Bold",
+      "categoria": "Labels",
+      "rotulo": "Label 8 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 14,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 8 Regular",
+      "categoria": "Labels",
+      "rotulo": "Label 8 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 14,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 9 Bold",
+      "categoria": "Labels",
+      "rotulo": "Label 9 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 12,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 9 Regular",
+      "categoria": "Labels",
+      "rotulo": "Label 9 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 12,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 10 Bold",
+      "categoria": "Labels",
+      "rotulo": "Label 10 Bold",
+      "familia": "Nunito",
+      "peso": "Bold",
+      "tamanho": 10,
+      "alturaLinha": 1
+    },
+    {
+      "nome": "Web/Labels/Label 10 Regular",
+      "categoria": "Labels",
+      "rotulo": "Label 10 Regular",
+      "familia": "Nunito",
+      "peso": "Regular",
+      "tamanho": 10,
+      "alturaLinha": 1
+    }
+  ],
+  "sombras": [
+    {
+      "nome": "Shadows/Light/1",
+      "css": "0px 1px 4px rgba(0,0,20,0.12)"
+    },
+    {
+      "nome": "Shadows/Light/2",
+      "css": "0px 2px 8px rgba(0,0,20,0.12)"
+    },
+    {
+      "nome": "Shadows/Light/3",
+      "css": "0px 4px 16px rgba(0,0,20,0.12)"
+    },
+    {
+      "nome": "Shadows/Light/4",
+      "css": "0px 8px 32px rgba(0,0,20,0.12)"
+    },
+    {
+      "nome": "Shadows/Dark/1",
+      "css": "0px 1px 4px rgba(0,0,20,0.32)"
+    },
+    {
+      "nome": "Shadows/Dark/2",
+      "css": "0px 2px 8px rgba(0,0,20,0.32)"
+    },
+    {
+      "nome": "Shadows/Dark/3",
+      "css": "0px 4px 16px rgba(0,0,20,0.32)"
+    },
+    {
+      "nome": "Shadows/Dark/4",
+      "css": "0px 8px 32px rgba(0,0,20,0.32)"
+    }
+  ],
+  "componentes": [
+    {
+      "nome": "Modal Size",
+      "figmaId": "123:4",
+      "categoria": "Feedback",
+      "descricao": "Larguras padronizadas de modal (Small, Medium, Large).",
+      "conjuntos": 0,
+      "variantes": 0,
+      "principal": null,
+      "propriedades": {}
+    },
+    {
+      "nome": "Accordion",
+      "figmaId": "1478:154619",
+      "categoria": "Exibição de dados",
+      "descricao": "Agrupa conteúdo em seções que abrem e fecham; versão em coluna com células de texto, badge, ações e checkbox.",
+      "conjuntos": 8,
+      "variantes": 45,
+      "principal": "Accordion",
+      "propriedades": {
+        "Variant": [
+          "Closed",
+          "Opened"
+        ],
+        "Type": [
+          "Ghost",
+          "Lined",
+          "Outline",
+          "Card",
+          "Filled"
+        ],
+        "Size": [
+          "Medium",
+          "Large"
+        ],
+        "Opened": [
+          "False",
+          "True"
+        ]
+      }
+    },
+    {
+      "nome": "Alert",
+      "figmaId": "3008:228391",
+      "categoria": "Feedback",
+      "descricao": "Mensagem fixa na página para informar, alertar ou confirmar. 5 variantes × 6 formatos.",
+      "conjuntos": 2,
+      "variantes": 31,
+      "principal": "Alert",
+      "propriedades": {
+        "Variant": [
+          "Info",
+          "Danger",
+          "Sucess",
+          "Warning",
+          "Neutral"
+        ],
+        "Type": [
+          "Description with close",
+          "Title with close",
+          "Compound",
+          "Compound with close",
+          "Description",
+          "Title"
+        ]
+      }
+    },
+    {
+      "nome": "Avatar",
+      "figmaId": "302:2636",
+      "categoria": "Exibição de dados",
+      "descricao": "Representa uma pessoa ou empresa por iniciais ou imagem, em círculo ou quadrado.",
+      "conjuntos": 1,
+      "variantes": 40,
+      "principal": "Avatar",
+      "propriedades": {
+        "Variant": [
+          "Circle",
+          "Square"
+        ],
+        "Type": [
+          "Imagem",
+          "Text"
+        ],
+        "Size": [
+          "XLarge",
+          "Large",
+          "Medium",
+          "Small",
+          "XSmall"
+        ],
+        "Color": [
+          "Secondary",
+          "Primary"
+        ]
+      }
+    },
+    {
+      "nome": "Badges",
+      "figmaId": "234:2136",
+      "categoria": "Exibição de dados",
+      "descricao": "Selos de preço, avaliação, notificação e produto.",
+      "conjuntos": 18,
+      "variantes": 27,
+      "principal": "Badges/Status",
+      "propriedades": {
+        "Status": [
+          "Danger",
+          "Warning",
+          "Sucess",
+          "Neutral",
+          "Info"
+        ],
+        "Flights": [
+          "Stops"
+        ],
+        "Number": [
+          "2",
+          "1",
+          "0"
+        ],
+        "Type": [
+          "Primary",
+          "Secundary"
+        ],
+        "Style": [
+          "Gray",
+          "Black"
+        ],
+        "Size": [
+          "Medium",
+          "Small"
+        ]
+      }
+    },
+    {
+      "nome": "Button",
+      "figmaId": "192:101",
+      "categoria": "Ações",
+      "descricao": "Ação principal ou secundária. 5 tipos × 3 estilos × 3 tamanhos × 5 estados, com ícone à esquerda/direita.",
+      "conjuntos": 7,
+      "variantes": 681,
+      "principal": "button",
+      "propriedades": {
+        "Type": [
+          "Primary",
+          "Secondary",
+          "Danger",
+          "Neutral",
+          "Success"
+        ],
+        "Style": [
+          "Filled",
+          "Outline",
+          "Text"
+        ],
+        "Size": [
+          "Medium",
+          "Small",
+          "Large"
+        ],
+        "Icon Left": [
+          "False",
+          "True"
+        ],
+        "Icon Right": [
+          "False",
+          "True"
+        ],
+        "State": [
+          "Default",
+          "Loading",
+          "Hover",
+          "Active",
+          "Disabled"
+        ]
+      }
+    },
+    {
+      "nome": "Breadcrumb",
+      "figmaId": "6361:455461",
+      "categoria": "Navegação",
+      "descricao": "Mostra onde o usuário está na hierarquia e permite voltar níveis.",
+      "conjuntos": 4,
+      "variantes": 8,
+      "principal": "Breadcrumb desktop",
+      "propriedades": {}
+    },
+    {
+      "nome": "Carousel",
+      "figmaId": "382:7812",
+      "categoria": "Navegação",
+      "descricao": "Indicadores de paginação para carrosséis (pontos ou linha).",
+      "conjuntos": 1,
+      "variantes": 8,
+      "principal": "Carousel",
+      "propriedades": {
+        "Color": [
+          "Secundary",
+          "Primary"
+        ],
+        "Type": [
+          "Dots",
+          "Line"
+        ],
+        "State": [
+          "Enable",
+          "Hover"
+        ]
+      }
+    },
+    {
+      "nome": "Chips",
+      "figmaId": "680:41510",
+      "categoria": "Formulários",
+      "descricao": "Filtros, escolhas e entradas compactas, com ícone, avatar e botão de remover.",
+      "conjuntos": 4,
+      "variantes": 39,
+      "principal": "Chip",
+      "propriedades": {
+        "Type": [
+          "Secondary",
+          "Primary"
+        ],
+        "Style": [
+          "Filter or choice",
+          "Input"
+        ],
+        "Icon": [
+          "False",
+          "True"
+        ],
+        "onDelete": [
+          "False",
+          "True"
+        ],
+        "State": [
+          "Default",
+          "Hover",
+          "Active",
+          "Selected disabled",
+          "Disabled"
+        ]
+      }
+    },
+    {
+      "nome": "Counter",
+      "figmaId": "1127:122573",
+      "categoria": "Ações",
+      "descricao": "Botões de somar e subtrair para quantidades.",
+      "conjuntos": 1,
+      "variantes": 6,
+      "principal": "counter",
+      "propriedades": {
+        "Counter": [
+          "Add",
+          "Subtract"
+        ],
+        "Status": [
+          "Default",
+          "Hover",
+          "Disabled"
+        ]
+      }
+    },
+    {
+      "nome": "Date picker",
+      "figmaId": "3361:264965",
+      "categoria": "Formulários",
+      "descricao": "Seletor de datas: período (De → Até, calendário de dois meses) e data única (calendário de um mês).",
+      "conjuntos": 1,
+      "variantes": 2,
+      "principal": "Date picker",
+      "propriedades": {
+        "Type": [
+          "Double basic",
+          "Single basic"
+        ]
+      }
+    },
+    {
+      "nome": "Dialog",
+      "figmaId": "1355:140333",
+      "categoria": "Feedback",
+      "descricao": "Caixa de diálogo com título e descrição, desktop e mobile.",
+      "conjuntos": 1,
+      "variantes": 6,
+      "principal": "Dialog",
+      "propriedades": {
+        "Title": [
+          "True",
+          "False"
+        ],
+        "Description": [
+          "True",
+          "False"
+        ],
+        "Device": [
+          "Desktop",
+          "Mobile"
+        ]
+      }
+    },
+    {
+      "nome": "Dividers",
+      "figmaId": "432:15965",
+      "categoria": "Exibição de dados",
+      "descricao": "Linhas divisórias horizontais e verticais, contínuas ou pontilhadas.",
+      "conjuntos": 1,
+      "variantes": 48,
+      "principal": "Divider",
+      "propriedades": {
+        "Style": [
+          "Dots",
+          "Line"
+        ],
+        "Position": [
+          "Horizontal",
+          "Vertical"
+        ],
+        "Type": [
+          "2px",
+          "1px"
+        ],
+        "Color": [
+          "Gray a",
+          "Gray b",
+          "Black",
+          "White",
+          "Primary",
+          "Secondary"
+        ]
+      }
+    },
+    {
+      "nome": "Dropdown",
+      "figmaId": "1327:128801",
+      "categoria": "Formulários",
+      "descricao": "Listas suspensas com busca, subtítulos, aninhamento e cabeçalho de gaveta.",
+      "conjuntos": 8,
+      "variantes": 25,
+      "principal": "Dropdown select",
+      "propriedades": {
+        "Device": [
+          "Desktop",
+          "Mobile"
+        ],
+        "Size": [
+          "Medium",
+          "Large"
+        ]
+      }
+    },
+    {
+      "nome": "Icon Button",
+      "figmaId": "1127:124459",
+      "categoria": "Ações",
+      "descricao": "Botão só com ícone. Mesmos tipos, estilos (incl. Ghost), tamanhos e estados do Button.",
+      "conjuntos": 1,
+      "variantes": 225,
+      "principal": "icon button",
+      "propriedades": {
+        "Type": [
+          "Primary",
+          "Neutral",
+          "Secondary",
+          "Danger",
+          "Success"
+        ],
+        "Style": [
+          "Filled",
+          "Outline",
+          "Ghost"
+        ],
+        "Size": [
+          "Medium",
+          "Small",
+          "Large"
+        ],
+        "State": [
+          "Default",
+          "Loading",
+          "Active",
+          "Hover",
+          "Disabled"
+        ]
+      }
+    },
+    {
+      "nome": "Menu Lateral",
+      "figmaId": "1076:4",
+      "categoria": "Navegação",
+      "descricao": "Navegação lateral aberta e fechada.",
+      "conjuntos": 1,
+      "variantes": 4,
+      "principal": "Menu lateral",
+      "propriedades": {
+        "Property 1": [
+          "Menu aberto - 0",
+          "Menu aberto - 1",
+          "Menu fechado - 1",
+          "Menu fechado - 0"
+        ]
+      }
+    },
+    {
+      "nome": "Header",
+      "figmaId": "1087:24299",
+      "categoria": "Navegação",
+      "descricao": "Cabeçalho da aplicação com usuário.",
+      "conjuntos": 1,
+      "variantes": 1,
+      "principal": "Header",
+      "propriedades": {}
+    },
+    {
+      "nome": "Checkbox",
+      "figmaId": "1127:119500",
+      "categoria": "Formulários",
+      "descricao": "Seleção múltipla. Primário/secundário, 2 tamanhos, fundo cinza ou branco.",
+      "conjuntos": 1,
+      "variantes": 48,
+      "principal": "Input Checkbox",
+      "propriedades": {
+        "Type": [
+          "Secondary",
+          "Primary"
+        ],
+        "State": [
+          "Active",
+          "Active hover",
+          "Default",
+          "Hover",
+          "Disabled",
+          "Disabled active"
+        ],
+        "Size": [
+          "Large",
+          "Medium"
+        ],
+        "Color mode": [
+          "Gray",
+          "White"
+        ]
+      }
+    },
+    {
+      "nome": "Number",
+      "figmaId": "1684:192803",
+      "categoria": "Formulários",
+      "descricao": "Campo numérico.",
+      "conjuntos": 1,
+      "variantes": 1,
+      "principal": "Input Number",
+      "propriedades": {}
+    },
+    {
+      "nome": "Radio Button",
+      "figmaId": "1127:119499",
+      "categoria": "Formulários",
+      "descricao": "Seleção única entre opções.",
+      "conjuntos": 1,
+      "variantes": 48,
+      "principal": "Input Radio button",
+      "propriedades": {
+        "Type": [
+          "Primary",
+          "Secondary"
+        ],
+        "Mode": [
+          "Radio On",
+          "Radio Off"
+        ],
+        "State": [
+          "Active",
+          "Active hover",
+          "Active disabled",
+          "Default",
+          "Hover",
+          "Disabled"
+        ],
+        "Size": [
+          "Large",
+          "Medium"
+        ],
+        "Color": [
+          "Gray",
+          "On color"
+        ]
+      }
+    },
+    {
+      "nome": "Input Text",
+      "figmaId": "352:5054",
+      "categoria": "Formulários",
+      "descricao": "Campo de texto e área de texto com rótulo, ícones, chips, mensagem de validação e texto de ajuda.",
+      "conjuntos": 13,
+      "variantes": 33,
+      "principal": "Imput",
+      "propriedades": {
+        "Size": [
+          "small",
+          "medium",
+          "large"
+        ],
+        "State": [
+          "Default",
+          "Active",
+          "Filled",
+          "Success",
+          "Error",
+          "Disabled",
+          "Filled Disabled"
+        ]
+      }
+    },
+    {
+      "nome": "List",
+      "figmaId": "1304:163570",
+      "categoria": "Exibição de dados",
+      "descricao": "Listas de 1 ou 2 linhas em 3 tamanhos, com texto, ícones e ações.",
+      "conjuntos": 7,
+      "variantes": 222,
+      "principal": "List",
+      "propriedades": {
+        "Lines": [
+          "Single-Line",
+          "Two-Lines"
+        ],
+        "Size": [
+          "Small",
+          "Medium",
+          "Large"
+        ],
+        "Type": [
+          "Simple",
+          "Simple + Text",
+          "Simple + Icon",
+          "Icon + Icon",
+          "Icon + Text",
+          "Avatar",
+          "Checkbox",
+          "Radio button",
+          "Icon"
+        ],
+        "State": [
+          "Default",
+          "Disabled",
+          "Hover",
+          "Selected"
+        ]
+      }
+    },
+    {
+      "nome": "Nav Button",
+      "figmaId": "1127:121152",
+      "categoria": "Ações",
+      "descricao": "Botões redondos de navegação: anterior, próximo, fechar, curtir, compartilhar.",
+      "conjuntos": 1,
+      "variantes": 126,
+      "principal": "navbutton",
+      "propriedades": {
+        "NavButton": [
+          "prev",
+          "next",
+          "close",
+          "add",
+          "Subtract",
+          "like",
+          "share"
+        ],
+        "Status": [
+          "Default",
+          "hover",
+          "disabled"
+        ],
+        "Size": [
+          "Medium",
+          "Small"
+        ],
+        "Color": [
+          "White",
+          "Primary",
+          "Secondary"
+        ]
+      }
+    },
+    {
+      "nome": "Modal",
+      "figmaId": "2439:222300",
+      "categoria": "Feedback",
+      "descricao": "Estrutura de modal (cabeçalho, corpo, rodapé) para desktop e mobile.",
+      "conjuntos": 7,
+      "variantes": 9,
+      "principal": "modal web",
+      "propriedades": {
+        "Size": [
+          "Small",
+          "Medium",
+          "Large"
+        ]
+      }
+    },
+    {
+      "nome": "Progress Bar",
+      "figmaId": "752:50556",
+      "categoria": "Feedback",
+      "descricao": "Barra de progresso em 2 tamanhos.",
+      "conjuntos": 1,
+      "variantes": 12,
+      "principal": "Progress bar",
+      "propriedades": {
+        "Style": [
+          "Primary",
+          "Secundary",
+          "TripAdvisor"
+        ],
+        "Color Mode": [
+          "Light"
+        ],
+        "Size": [
+          "Small",
+          "Medium"
+        ],
+        "Progress": [
+          "50%",
+          "100%"
+        ]
+      }
+    },
+    {
+      "nome": "Progress Stepper",
+      "figmaId": "693:40036",
+      "categoria": "Navegação",
+      "descricao": "Etapas de um fluxo, com ícone, estado e posição.",
+      "conjuntos": 6,
+      "variantes": 47,
+      "principal": "Steppers large",
+      "propriedades": {}
+    },
+    {
+      "nome": "Pagination",
+      "figmaId": "3481:277832",
+      "categoria": "Navegação",
+      "descricao": "Navegação entre páginas, com ou sem resumo \"1 de 10 páginas\".",
+      "conjuntos": 2,
+      "variantes": 6,
+      "principal": "Pagination",
+      "propriedades": {
+        "Variant": [
+          "Secondary",
+          "Neutral"
+        ],
+        "Abstract": [
+          "On",
+          "Off"
+        ]
+      }
+    },
+    {
+      "nome": "Ranking",
+      "figmaId": "1134:110109",
+      "categoria": "Exibição de dados",
+      "descricao": "Avaliação por estrelas (0 a 5).",
+      "conjuntos": 2,
+      "variantes": 7,
+      "principal": "Category",
+      "propriedades": {
+        "Property 1": [
+          "Category"
+        ],
+        "Property 2": [
+          "5",
+          "4",
+          "3",
+          "2",
+          "1",
+          "0"
+        ]
+      }
+    },
+    {
+      "nome": "Slider",
+      "figmaId": "1127:120830",
+      "categoria": "Formulários",
+      "descricao": "Seleção de valor ou faixa (simples ou duplo).",
+      "conjuntos": 1,
+      "variantes": 10,
+      "principal": "Sliders",
+      "propriedades": {
+        "Type": [
+          "Single",
+          "Double"
+        ],
+        "State": [
+          "Default",
+          "Hover left",
+          "Active left",
+          "Hover right",
+          "Disabled",
+          "Active right",
+          "Active",
+          "Hover"
+        ]
+      }
+    },
+    {
+      "nome": "Spinner Circular",
+      "figmaId": "1189:121197",
+      "categoria": "Feedback",
+      "descricao": "Indicador de carregamento em 5 tamanhos e 8 cores.",
+      "conjuntos": 6,
+      "variantes": 45,
+      "principal": "Spinner Circular",
+      "propriedades": {
+        "Style": [
+          "Primary",
+          "Secundary",
+          "Black",
+          "Gray",
+          "Danger",
+          "Success",
+          "White",
+          "FEB"
+        ],
+        "Size": [
+          "XXL",
+          "XL",
+          "L",
+          "M",
+          "S"
+        ]
+      }
+    },
+    {
+      "nome": "Switch",
+      "figmaId": "1127:120353",
+      "categoria": "Formulários",
+      "descricao": "Liga/desliga uma opção imediatamente.",
+      "conjuntos": 1,
+      "variantes": 12,
+      "principal": "Switch",
+      "propriedades": {
+        "Type": [
+          "Primary",
+          "Secundary"
+        ],
+        "Mode": [
+          "Switch On",
+          "Switch Off"
+        ],
+        "State": [
+          "Disabled",
+          "Enable",
+          "Hover"
+        ]
+      }
+    },
+    {
+      "nome": "Scrollbar",
+      "figmaId": "4890:457219",
+      "categoria": "Navegação",
+      "descricao": "Barras de rolagem vertical e horizontal.",
+      "conjuntos": 1,
+      "variantes": 2,
+      "principal": "Scrollbar",
+      "propriedades": {
+        "Type": [
+          "Vertical",
+          "Horizontal"
+        ]
+      }
+    },
+    {
+      "nome": "Tabs",
+      "figmaId": "414:12942",
+      "categoria": "Navegação",
+      "descricao": "Navegação por abas: ativa, inativa, justificada ou alinhada.",
+      "conjuntos": 12,
+      "variantes": 12,
+      "principal": "Pieces / Tabs / Active Justified",
+      "propriedades": {}
+    },
+    {
+      "nome": "Toast",
+      "figmaId": "1355:140297",
+      "categoria": "Feedback",
+      "descricao": "Aviso temporário de sucesso, erro, informação, alerta ou neutro.",
+      "conjuntos": 2,
+      "variantes": 16,
+      "principal": "toast",
+      "propriedades": {
+        "Variant": [
+          "Sucess",
+          "Danger",
+          "Info",
+          "Warning",
+          "Neutral"
+        ],
+        "Type": [
+          "Compound",
+          "Title",
+          "Description"
+        ]
+      }
+    },
+    {
+      "nome": "Tooltip",
+      "figmaId": "270:2438",
+      "categoria": "Feedback",
+      "descricao": "Dica ao passar o mouse, simples ou detalhada, em 3 estilos e 8 posições.",
+      "conjuntos": 2,
+      "variantes": 52,
+      "principal": "Tooltip",
+      "propriedades": {
+        "Style": [
+          "Dark",
+          "Medium",
+          "Light"
+        ],
+        "Pointer": [
+          "Bot / Left",
+          "Bot / Center",
+          "Bot / Right",
+          "Top / Left",
+          "Top / Center",
+          "Top / Right",
+          "Left / Center",
+          "Right / Center"
+        ],
+        "Type": [
+          "Simple",
+          "Detailed"
+        ]
+      }
+    },
+    {
+      "nome": "Video Button",
+      "figmaId": "1127:121900",
+      "categoria": "Ações",
+      "descricao": "Botão de play para vídeos.",
+      "conjuntos": 1,
+      "variantes": 4,
+      "principal": "videobutton",
+      "propriedades": {
+        "Status": [
+          "Default",
+          "hover",
+          "Active",
+          "disabled"
+        ]
+      }
+    },
+    {
+      "nome": "Wizard",
+      "figmaId": "1780:208528",
+      "categoria": "Navegação",
+      "descricao": "Fluxo guiado em etapas com acordeão.",
+      "conjuntos": 3,
+      "variantes": 29,
+      "principal": "Wizard_Small",
+      "propriedades": {}
+    },
+    {
+      "nome": "Toggle Button",
+      "figmaId": "4129:381971",
+      "categoria": "Ações",
+      "descricao": "Alterna entre duas opções.",
+      "conjuntos": 1,
+      "variantes": 2,
+      "principal": "Toggle button",
+      "propriedades": {
+        "Option": [
+          "1",
+          "2"
+        ]
+      }
+    }
+  ]
+}

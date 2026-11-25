@@ -1,0 +1,292 @@
+=== c-casca | MainLayout.tsx
+/* Esqueleto da casca: sidebar 220px (arrastável 200–420px, recolhível) + topbar 56px + <main> com padding 20px.
+   No mobile (≤ 768px) a sidebar vira overlay. */
+import { useEffect, useState } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
+
+export function MainLayout() {
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const { pathname } = useLocation()
+  useEffect(() => { setMobileOpen(false) }, [pathname])          // fecha o overlay ao navegar
+
+  return (
+    <div className="shell">                                       {/* w-full é obrigatório: #root é display:flex */}
+      <Sidebar mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} />
+      <div className={`sidebar-overlay${mobileOpen ? ' is-aberto' : ''}`} onClick={() => setMobileOpen(false)} />
+      <div className="shell__coluna">
+        <Topbar onOpenMobile={() => setMobileOpen(true)} />
+        <main className="shell__main"><Outlet /></main>
+      </div>
+    </div>
+  )
+}
+
+=== c-casca | casca.css
+html, body, #root { height: 100%; }
+body { margin: 0; font: 13px 'Inter', sans-serif; background: var(--c-bg); overflow: hidden; }   /* quem rola é o <main>, nunca o body */
+#root { display: flex; width: 100%; height: 100vh; height: 100dvh; }                              /* vh como fallback do dvh */
+* { box-sizing: border-box; }
+
+.shell { display: flex; width: 100%; height: 100%; overflow: hidden; background: var(--c-bg); }
+.shell__coluna { display: flex; flex-direction: column; flex: 1; min-width: 0; overflow: hidden; }
+.shell__main { display: flex; flex-direction: column; flex: 1; overflow: auto; padding: 20px; background: var(--c-bg); }
+
+/* Sidebar */
+.sb { width: 220px; flex-shrink: 0; padding: 16px 0; background: var(--c-sidebar-bg); border-radius: 0 12px 12px 0;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, .28); transition: width .28s cubic-bezier(.4, 0, .2, 1); }
+.sb.is-recolhida { width: 60px; }
+.sb-item { display: flex; align-items: center; gap: 10px; margin: 1px 8px; padding: 9px 14px; border-radius: 8px;
+  font-size: 13px; color: rgba(255, 255, 255, .7); cursor: pointer; }
+.sb-item:hover { background: rgba(255, 255, 255, .07); }
+.sb-item.is-ativo { background: rgba(255, 255, 255, .1); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 #fff; }
+
+/* Topbar */
+.topbar { display: flex; align-items: center; gap: 16px; height: 56px; padding: 0 24px; background: var(--c-surface); box-shadow: 0 1px 4px rgba(0, 0, 0, .06); }
+
+@media (max-width: 768px) {
+  .sb { position: fixed; inset: 0 auto 0 0; z-index: 8000; transform: translateX(-100%); }
+  .sidebar-overlay.is-aberto { position: fixed; inset: 0; z-index: 7999; background: rgba(0, 0, 0, .4); }
+}
+
+=== c-casca | RotaPorPlano.tsx
+/* Bloqueia a rota se a funcionalidade não está no plano do cliente.
+   É só UX — a segurança real é o 403 do backend. */
+export function FuncionalidadeRoute({ code, nome, children }: { code: string; nome: string; children: ReactNode }) {
+  const { data } = useFuncionalidadesDoTenant()
+  if (!data) return <>{children}</>                              // carregando: não pisca "Não contratado"
+  const habilitada = data.produtos.flatMap(p => p.modules).flatMap(m => m.functionalities).some(f => f.code === code && f.habilitada)
+  return habilitada ? <>{children}</> : <NaoContratadoPage nomeFuncionalidade={nome} />
+}
+
+<Route path="/marcas/processos" element={<FuncionalidadeRoute code="marcas.processos" nome="Processos"><ProcessosPage /></FuncionalidadeRoute>} />
+
+=== c-toolbar | BarraDeResultados.tsx
+/* Barra de resultados: contagem à esquerda; ordenação + menu de ações à direita. */
+import { SortAscending, SortDescending } from '@phosphor-icons/react'
+
+export type Direcao = 'asc' | 'desc'
+
+/** Alterna A→Z / Z→A ao lado do select: critério e sentido são escolhas independentes. */
+export function OrdenarDirecaoBotao({ direcao, onChange, disabled }: { direcao: Direcao; onChange: (d: Direcao) => void; disabled?: boolean }) {
+  const asc = direcao === 'asc'
+  const titulo = asc ? 'Ordenação crescente (A → Z). Clique para inverter.' : 'Ordenação decrescente (Z → A). Clique para inverter.'
+  return (
+    <button type="button" className="ord-dir" title={titulo} aria-label={titulo} aria-pressed={!asc} disabled={disabled} onClick={() => onChange(asc ? 'desc' : 'asc')}>
+      {asc ? <SortAscending size={15} /> : <SortDescending size={15} />}
+    </button>
+  )
+}
+
+export function BarraDeResultados({ total, children }: { total: number; children: React.ReactNode }) {
+  return (
+    <div className="toolbar">
+      <span className="toolbar__count"><strong>{total.toLocaleString('pt-BR')}</strong> registros</span>
+      <div className="toolbar__combos">{children}</div>
+    </div>
+  )
+}
+
+=== c-toolbar | barra-resultados.css
+.toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+.toolbar__count { font-size: 13px; color: var(--c-table-head-txt); }
+.toolbar__count strong { color: var(--c-brand); }
+.toolbar__combos { display: flex; align-items: flex-end; gap: 12px; }
+
+.ord { display: flex; flex-direction: column; gap: 3px; }
+.ord > span { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--c-text-muted); }
+.ord select { height: 28px; padding: 0 8px; border: 1.5px solid var(--c-border); border-radius: 6px; background: var(--c-surface); font: 12px 'Inter', sans-serif; color: var(--c-table-head-txt); cursor: pointer; }
+.ord__controles { display: flex; align-items: center; gap: 6px; }
+.ord-dir { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 28px; height: 28px;
+  border: 1.5px solid var(--c-border); border-radius: 6px; background: var(--c-surface); color: var(--c-support); cursor: pointer; }
+.ord-dir:hover:not(:disabled) { border-color: var(--c-support); background: color-mix(in srgb, var(--c-support) 8%, var(--c-surface)); }
+.ord-dir:disabled { opacity: .55; cursor: default; }
+@media (max-width: 640px) { .toolbar { flex-direction: column; align-items: stretch; } }
+
+=== c-toolbar | Uso.tsx
+<BarraDeResultados total={total}>
+  <div className="ord">
+    <span>Ordenar</span>
+    <div className="ord__controles">
+      {/* trocar a ordenação SEMPRE volta para a página 1 */}
+      <select value={ordenarPor} onChange={e => { setOrdenarPor(e.target.value); setPagina(1) }}>…</select>
+      <OrdenarDirecaoBotao direcao={direcao} onChange={setDirecao} disabled={isFetching} />
+    </div>
+  </div>
+  <MenuDeAcoes selecionados={sel.size} onAcao={executar} />
+</BarraDeResultados>
+
+=== x-cabecalho | CabecalhoDePagina.tsx
+/* Breadcrumb de 2 níveis (separador = CaretDown girado −90°) + título. Sem subtítulo. Ação principal à direita. */
+import { CaretDown } from '@phosphor-icons/react'
+
+export function CabecalhoDePagina({ nivel1, nivel2, titulo, acao }: { nivel1: string; nivel2: string; titulo: string; acao?: React.ReactNode }) {
+  return (
+    <div className="pg-head">
+      <div>
+        <div className="pg-head__crumb">
+          <span>{nivel1}</span><CaretDown size={10} style={{ transform: 'rotate(-90deg)' }} /><span>{nivel2}</span>
+        </div>
+        <div className="pg-head__titulo">{titulo}</div>
+      </div>
+      {acao}
+    </div>
+  )
+}
+
+=== x-cabecalho | cabecalho.css
+.pg-head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+.pg-head__crumb { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; font-size: 12px; color: var(--c-neutral); }
+.pg-head__titulo { font-size: 20px; font-weight: 800; color: var(--c-brand); }
+html.dark-mode .pg-head__titulo { color: var(--c-text); }          /* --c-brand some no escuro */
+
+=== x-pagina-listagem | PaginaDeListagem.tsx
+/* Receita completa: header → filtro → (orientação inicial | resultados) → barra → tabela → paginação. */
+export default function MinhaListagemPage() {
+  const [filtroAberto, setFiltroAberto] = useState(true)
+  const [filtroForm, setFiltroForm] = useState<Filtro>(FILTRO_VAZIO)
+  const [filtroAplicado, setFiltroAplicado] = useState<Filtro>(FILTRO_VAZIO)
+  const [buscou, setBuscou] = useState(false)
+  const [pagina, setPagina] = useState(1)
+  const [tamanho, setTamanho] = useState(20)
+  const resultadosRef = useRef<HTMLDivElement>(null)
+
+  const { data, isFetching, isError, refetch } = useBuscarX(filtroAplicado, pagina, tamanho, buscou)
+  const total = data?.total ?? 0
+
+  function pesquisar(e: React.FormEvent) {
+    e.preventDefault()
+    setFiltroAplicado(filtroForm); setPagina(1); setBuscou(true); setFiltroAberto(false)
+  }
+  const limpar = () => setFiltroForm(FILTRO_VAZIO)
+
+  useEffect(() => { if (buscou) resultadosRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }, [pagina])
+
+  return (
+    <div>
+      <CabecalhoDePagina nivel1="Marcas" nivel2="Manutenção" titulo="Relatório de X" />
+
+      <CardDeFiltros onPesquisar={pesquisar} onLimpar={limpar} pesquisando={isFetching}>
+        <div className="mf-two-col">
+          <div className="mf-col">{/* Field layout="row" … */}</div>
+          <div className="mf-col">{/* Field layout="row" … */}</div>
+        </div>
+      </CardDeFiltros>
+
+      {!buscou && <EstadoVazio variante="inicio" titulo="Comece pesquisando" descricao="Preencha os filtros e clique em Pesquisar." />}
+
+      {buscou && (
+        <div ref={resultadosRef} style={{ position: 'relative' }}>
+          {isFetching && <OverlayDeCarregamento />}
+          <BarraDeResultados total={total}>{/* Ordenar + Ações */}</BarraDeResultados>
+
+          {isError ? (
+            <EstadoVazio variante="erro" titulo="Não foi possível carregar" acoes={[{ rotulo: 'Tentar novamente', onClick: () => refetch(), tipo: 'primaria' }]} />
+          ) : total === 0 ? (
+            <EstadoVazio variante="sem-resultado" titulo="Nenhum registro encontrado" acoes={[{ rotulo: 'Limpar filtros', onClick: limpar }]} />
+          ) : (
+            <div className="mp-table-wrap"><table className="mp-table mp-table--minha-tela">…</table></div>
+          )}
+
+          <Paginacao pagina={pagina} tamanho={tamanho} total={total} onPagina={setPagina} onTamanho={setTamanho} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+=== x-pagina-listagem | useBuscarX.ts
+/* Listagem é POST em /api/.../busca (não GET com query string). Nada é buscado antes da 1ª pesquisa. */
+export function useBuscarX(filtro: Filtro, pagina: number, tamanho: number, buscou: boolean) {
+  return useQuery({
+    queryKey: ['x', filtro, pagina, tamanho],
+    queryFn: () => buscarX(filtro, pagina, tamanho),     // service: authApiClient.post('/api/x/busca', …)
+    enabled: buscou,
+    placeholderData: keepPreviousData,                   // não pisca ao paginar
+  })
+}
+/* Nomes: XPage.tsx · XDrawer.tsx · useBuscarX (listagem) · useAtualizarX (mutation) · buscarX (service). */
+
+=== x-utilitarios | formatarNumero.ts
+/* Padrão pt-BR em TODO número exibido ao usuário. */
+export const formatarNumero = (valor: number) => valor.toLocaleString('pt-BR')                                                   // 1.234
+export const formatarValor  = (valor: number) => valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) // 1.234,50
+export const formatarMoeda  = (valor: number) => `R$ ${formatarValor(valor)}`                                                   // R$ 1.234,50
+
+=== x-utilitarios | filtroDeData.ts
+/** Abre o datepicker nativo ao clicar em qualquer parte do campo (não só no ícone). */
+export function abrirSeletorDeData(e: React.MouseEvent<HTMLInputElement>) { e.currentTarget.showPicker?.() }
+
+/** "Até" vazio = até hoje — nunca bloqueia a pesquisa. */
+export const ateOuHoje = (ate: string) => ate || hojeLocalIso()
+
+/** Hoje no fuso LOCAL (toISOString() é UTC e à noite no Brasil já devolve amanhã). */
+export function hojeLocalIso(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+=== x-tema | useAppTheme.ts
+/* Tema = classe no <body> (muda só --c-support* e --c-sidebar-bg).
+   Modo escuro = classe no <html>. As duas são independentes e se combinam. */
+import { useEffect, useState } from 'react'
+
+export interface AppTheme { id: string; label: string; support: string; sidebarBg: string }
+
+export const APP_THEMES: AppTheme[] = [
+  { id: 'padrao',  label: 'Padrão',  support: '#0059AD', sidebarBg: '#001A33' },
+  { id: 'violeta', label: 'Violeta', support: '#7C3AED', sidebarBg: '#241B3D' },
+  { id: 'ambar',   label: 'Âmbar',   support: '#D97706', sidebarBg: '#3A2607' },
+  { id: 'teal',    label: 'Teal',    support: '#0D9488', sidebarBg: '#062A28' },
+  { id: 'rosa',    label: 'Rosa',    support: '#DB2777', sidebarBg: '#3D1225' },
+  { id: 'cinza',   label: 'Cinza',   support: '#475569', sidebarBg: '#1E293B' },
+  { id: 'marinho', label: 'Marinho', support: '#001A33', sidebarBg: '#000D1A' },
+]
+
+const THEME_KEY = 'userTheme'
+const DARK_KEY = 'darkMode'
+
+function temaSalvo(): string {
+  const s = localStorage.getItem(THEME_KEY)
+  return s && APP_THEMES.some(t => t.id === s) ? s : 'padrao'
+}
+function aplicarTema(id: string) {
+  for (const t of APP_THEMES) document.body.classList.remove(`theme-${t.id}`)
+  if (id !== 'padrao') document.body.classList.add(`theme-${id}`)      // 'padrao' = sem classe
+}
+
+export function useAppTheme() {
+  const [theme, setTheme] = useState<string>(temaSalvo)
+  const [dark, setDark] = useState<boolean>(() => localStorage.getItem(DARK_KEY) === '1')
+  useEffect(() => { aplicarTema(theme); localStorage.setItem(THEME_KEY, theme) }, [theme])
+  useEffect(() => { document.documentElement.classList.toggle('dark-mode', dark); localStorage.setItem(DARK_KEY, dark ? '1' : '0') }, [dark])
+  return { theme, setTheme, themes: APP_THEMES, dark, setDark }
+}
+
+=== x-tema | tema.css
+/* Cada tema troca SÓ o destaque e a sidebar; status, neutros e tipografia são fixos. */
+body.theme-violeta { --c-support: #7C3AED; --c-support-h: #6D28D9; --c-support-a: #5B21B6; --c-sidebar-bg: #241B3D; }
+body.theme-ambar   { --c-support: #D97706; --c-support-h: #B45309; --c-support-a: #92400E; --c-sidebar-bg: #3A2607; }
+body.theme-teal    { --c-support: #0D9488; --c-support-h: #0B7A6F; --c-support-a: #134E4A; --c-sidebar-bg: #062A28; }
+body.theme-rosa    { --c-support: #DB2777; --c-support-h: #BE185D; --c-support-a: #831843; --c-sidebar-bg: #3D1225; }
+body.theme-cinza   { --c-support: #475569; --c-support-h: #334155; --c-support-a: #1E293B; --c-sidebar-bg: #1E293B; }
+body.theme-marinho { --c-support: #001A33; --c-support-h: #001428; --c-support-a: #000D1A; --c-sidebar-bg: #000D1A; }
+
+/* Modo escuro: redefine superfícies/texto/borda; o accent do tema CLAREIA para não sumir sobre a superfície escura. */
+html.dark-mode {
+  color-scheme: dark;
+  --c-bg: #0F141A; --c-surface: #161D26; --c-surface-2: #1C2530; --c-text: #E6EAF0;
+  --c-border: #2A3542; --c-border-soft: #222C38; --c-table-head: #1C2530; --c-table-head-txt: #C5CDD8;
+  --c-neutral: #9AA5B4; --c-neutral-h: #C5CDD8; --c-text-muted: #6E7A8A;
+  --c-success-bg: #12301F; --c-success-txt: #6EE7A0; --c-danger-bg: #3A1717; --c-danger-txt: #FCA5A5;
+  --c-warning-bg: #3A2A0C; --c-warning-txt: #FCD34D; --c-info-bg: #142744; --c-info-txt: #93C5FD;
+  --c-ai-bg: #2A2145; --c-ai-hover: #C4B5FD; --c-img-bg: #F4F6F9;
+  --c-input-border-disabled: #2A3542; --c-input-bg-disabled: #1C2530; --c-input-text-disabled: #6E7A8A;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.4); --shadow-md: 0 4px 16px rgba(0,0,0,.45), 0 1px 4px rgba(0,0,0,.3); --shadow-lg: 0 12px 40px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.35);
+}
+html.dark-mode body { color: var(--c-text); --c-support: #3B8AE0; --c-support-h: #5A9DE6; --c-support-a: #2F74C0; }
+html.dark-mode body.theme-violeta { --c-support: #8B5CF6; --c-support-h: #A78BFA; --c-support-a: #7C3AED; }
+html.dark-mode body.theme-ambar   { --c-support: #D97706; --c-support-h: #F59E0B; --c-support-a: #B45309; }
+html.dark-mode body.theme-teal    { --c-support: #0E9F94; --c-support-h: #14B8A6; --c-support-a: #0D8A80; }
+html.dark-mode body.theme-rosa    { --c-support: #EC4899; --c-support-h: #F472B6; --c-support-a: #DB2777; }
+html.dark-mode body.theme-cinza   { --c-support: #7C8BA1; --c-support-h: #94A3B8; --c-support-a: #64748B; }
+html.dark-mode body.theme-marinho { --c-support: #4F7FB0; --c-support-h: #6A95C2; --c-support-a: #3F6A96; }

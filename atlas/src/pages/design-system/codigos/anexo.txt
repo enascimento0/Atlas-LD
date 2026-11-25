@@ -1,0 +1,1140 @@
+=== Date picker | Comportamento.md
+Calendário próprio para datas, em portal (document.body). Dois componentes: SeletorDePeriodo (De → Até) e SeletorDeData (data única).
+Os dois são o <input type="date"> nativo (aceita digitação; o ícone nativo some e fica o CalendarBlank) + um calendário próprio. Clicar ou focar abre o painel.
+
+                 | Período (De → Até)                                      | Data única
+-----------------|---------------------------------------------------------|----------------------------------------------
+Meses exibidos   | 2 (1 se window.innerWidth < 720)                        | 1
+Clique           | 1º clique = início, 2º = fim (antes do início, recomeça)| 1 clique grava e fecha
+Destaque         | extremos em --c-support + faixa 12% entre eles          | só o dia escolhido (sem faixa)
+Dica no hover    | tooltip escuro "N dias" sobre o dia (escolhendo o fim)  | não tem
+Rodapé           | resumo "dd/mm/aaaa → dd/mm/aaaa · N dias" + Cancelar / Confirmar | data por extenso + Limpar / Hoje
+Aplica quando    | clica em Confirmar (precisa De e Até)                   | ao clicar no dia, Limpar ou Hoje
+Fecha            | Esc, Cancelar ou clique fora (descarta o rascunho)      | Esc ou clique fora (não altera)
+Mês inicial      | mês anterior ao do "Até" (fica à direita) ou o do "De"  | mês do valor, ou hoje
+
+Regras comuns: datas em ISO AAAA-MM-DD ("" = vazio); min/max desabilitam dias fora do limite; hoje aparece em negrito + sublinhado;
+painel em position: fixed abaixo do campo, sem passar da borda direita da janela; z-index 9400 (acima de drawers e modais).
+Dependências: React 19, @phosphor-icons/react, alias @/ → src/. Os tokens (--c-*, --dk-*) vêm do tokens.css do Design System.
+
+=== Date picker | SeletorDePeriodo.tsx
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { CalendarBlank, CaretLeft, CaretRight, Check, X } from '@phosphor-icons/react'
+
+// Período De → Até: os dois campos de data de sempre (aceitam digitação), mas o clique abre um
+// calendário de dois meses em que o primeiro clique marca o início e o segundo o fim — o intervalo
+// fica destacado e, ao escolher o fim, a dica mostra quantos dias o período tem. "Confirmar"
+// aplica; Esc, Cancelar ou clique fora descartam. Datas em ISO (AAAA-MM-DD); "" = vazio.
+
+export interface Periodo { de: string; ate: string }
+
+export const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
+const DIAS_DA_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+// Largura do painel (2 meses de 7 × 36px + vão + padding) — para não sair da tela à direita.
+const LARGURA_DOIS_MESES = 2 * 7 * 36 + 32 + 40
+export const LARGURA_UM_MES = 7 * 36 + 40
+
+export function iso(ano: number, mes: number, dia: number): string {
+  return `${ano}-${String(mes + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
+}
+export function hojeIso(): string {
+  const d = new Date()
+  return iso(d.getFullYear(), d.getMonth(), d.getDate())
+}
+export function formatar(valor: string): string {
+  const [a, m, d] = valor.split('-')
+  return `${d}/${m}/${a}`
+}
+function diasEntre(de: string, ate: string): number {
+  const [a1, m1, d1] = de.split('-').map(Number)
+  const [a2, m2, d2] = ate.split('-').map(Number)
+  return Math.round((new Date(a2, m2 - 1, d2).getTime() - new Date(a1, m1 - 1, d1).getTime()) / 86_400_000) + 1
+}
+function plural(n: number): string {
+  return `${n} ${n === 1 ? 'dia' : 'dias'}`
+}
+
+export type MesVisivel = { ano: number; mes: number }
+
+export function somarMeses({ ano, mes }: MesVisivel, n: number): MesVisivel {
+  const d = new Date(ano, mes + n, 1)
+  return { ano: d.getFullYear(), mes: d.getMonth() }
+}
+
+/** Mês inicial da esquerda: o mês anterior ao do "Até" (o "Até" fica à direita), ou o do "De". */
+function mesInicial(p: Periodo, meses: number): MesVisivel {
+  const base = p.ate || p.de || hojeIso()
+  const [a, m] = base.split('-').map(Number)
+  return somarMeses({ ano: a, mes: m - 1 }, meses === 2 && p.ate ? -1 : 0)
+}
+
+export function MesDoCalendario({ visivel, rascunho, previa, onEscolher, onPassar, min, max }: {
+  visivel: MesVisivel
+  rascunho: Periodo
+  /** Fim provisório enquanto o mouse passa (escolhendo o fim). */
+  previa: string | null
+  onEscolher: (dia: string) => void
+  onPassar: (dia: string | null) => void
+  /** Limites (ISO): os dias fora deles ficam desabilitados. */
+  min?: string
+  max?: string
+}) {
+  const { ano, mes } = visivel
+  const primeiroDiaDaSemana = new Date(ano, mes, 1).getDay()
+  const totalDeDias = new Date(ano, mes + 1, 0).getDate()
+  const hoje = hojeIso()
+  // Escolhendo o fim, o dia sob o mouse vale como fim provisório (mostra a faixa e a dica).
+  const fim = (previa && previa >= rascunho.de ? previa : '') || rascunho.ate
+  const inicio = rascunho.de
+
+  return (
+    <div>
+      <div className="mf-periodo-mes-tit">{MESES[mes]} de {ano}</div>
+      <div className="mf-periodo-grade" onMouseLeave={() => onPassar(null)}>
+        {DIAS_DA_SEMANA.map(d => <span key={d} className="mf-periodo-sem">{d}</span>)}
+        {Array.from({ length: primeiroDiaDaSemana }, (_, i) => <span key={`v${i}`} />)}
+        {Array.from({ length: totalDeDias }, (_, i) => {
+          const dia = iso(ano, mes, i + 1)
+          const coluna = (primeiroDiaDaSemana + i) % 7
+          const ehInicio = dia === inicio
+          const ehFim = !!fim && dia === fim && fim >= inicio
+          const noIntervalo = !!inicio && !!fim && dia > inicio && dia < fim
+          const classes = ['mf-periodo-dia']
+          if (ehInicio || ehFim) classes.push('ponta')
+          if (noIntervalo) classes.push('no-intervalo')
+          // Faixa do intervalo arredondada no começo e no fim de cada semana.
+          if (noIntervalo && (coluna === 0 || i === 0)) classes.push('borda-esq')
+          if (noIntervalo && (coluna === 6 || i === totalDeDias - 1)) classes.push('borda-dir')
+          if (dia === hoje) classes.push('hoje')
+          const mostrarDica = !!inicio && previa === dia && dia >= inicio
+          const foraDoLimite = (!!min && dia < min) || (!!max && dia > max)
+          return (
+            <button
+              key={dia} type="button" className={classes.join(' ')} disabled={foraDoLimite}
+              onClick={() => onEscolher(dia)}
+              onMouseEnter={() => onPassar(dia)}
+              aria-label={formatar(dia)} aria-pressed={ehInicio || ehFim}
+            >
+              {i + 1}
+              {mostrarDica && <span className="mf-periodo-dica">{plural(diasEntre(inicio, dia))}</span>}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+export function SeletorDePeriodo({ valor, onChange, className, disabled, min, max, ariaLabel, inputClassName }: {
+  valor: Periodo
+  onChange: (p: Periodo) => void
+  className?: string
+  disabled?: boolean
+  /** Limites (ISO) do período inteiro. */
+  min?: string
+  max?: string
+  /** Prefixo dos rótulos acessíveis: "Data de Registro de" / "… até". */
+  ariaLabel?: string
+  /** Classe extra nos dois <input> (ex.: mf-input-error). */
+  inputClassName?: string
+}) {
+  const [aberto, setAberto] = useState(false)
+  // Qual ponta o próximo clique no calendário define.
+  const [proximo, setProximo] = useState<'de' | 'ate'>('de')
+  const [rascunho, setRascunho] = useState<Periodo>(valor)
+  const [previa, setPrevia] = useState<string | null>(null)
+  const [esquerda, setEsquerda] = useState<MesVisivel>(() => mesInicial(valor, 2))
+  const [posicao, setPosicao] = useState<{ top: number; left: number } | null>(null)
+  const [meses, setMeses] = useState(2)
+  const raizRef = useRef<HTMLDivElement>(null)
+  const painelRef = useRef<HTMLDivElement>(null)
+
+  function abrir(ponta: 'de' | 'ate') {
+    if (disabled) return
+    const qtd = window.innerWidth < 720 ? 1 : 2
+    setMeses(qtd)
+    if (!aberto) {
+      setRascunho(valor)
+      setEsquerda(mesInicial(valor, qtd))
+    }
+    setProximo(ponta)
+    setPrevia(null)
+    setAberto(true)
+  }
+  function fechar() {
+    setAberto(false)
+    setPrevia(null)
+  }
+
+  // Posição fixa abaixo dos campos, sem passar da borda direita da janela.
+  useEffect(() => {
+    if (!aberto) return
+    function atualizar() {
+      const r = raizRef.current?.getBoundingClientRect()
+      if (!r) return
+      const largura = meses === 2 ? LARGURA_DOIS_MESES : LARGURA_UM_MES
+      setPosicao({ top: r.bottom + 6, left: Math.max(12, Math.min(r.left, window.innerWidth - largura - 12)) })
+    }
+    atualizar()
+    window.addEventListener('scroll', atualizar, true)
+    window.addEventListener('resize', atualizar)
+    return () => {
+      window.removeEventListener('scroll', atualizar, true)
+      window.removeEventListener('resize', atualizar)
+    }
+  }, [aberto, meses])
+
+  useEffect(() => {
+    if (!aberto) return
+    function aoClicarFora(e: MouseEvent) {
+      const alvo = e.target as Node
+      if (raizRef.current?.contains(alvo) || painelRef.current?.contains(alvo)) return
+      fechar()
+    }
+    function aoTeclar(e: KeyboardEvent) { if (e.key === 'Escape') fechar() }
+    document.addEventListener('mousedown', aoClicarFora)
+    document.addEventListener('keydown', aoTeclar)
+    return () => {
+      document.removeEventListener('mousedown', aoClicarFora)
+      document.removeEventListener('keydown', aoTeclar)
+    }
+  }, [aberto])
+
+  function escolher(dia: string) {
+    if (proximo === 'de' || !rascunho.de || dia < rascunho.de) {
+      // Novo início: o fim é escolhido de novo no próximo clique.
+      setRascunho({ de: dia, ate: '' })
+      setProximo('ate')
+    } else {
+      setRascunho(r => ({ ...r, ate: dia }))
+      setProximo('de')
+    }
+    setPrevia(null)
+  }
+
+  function confirmar() {
+    if (!rascunho.de || !rascunho.ate) return
+    onChange(rascunho)
+    fechar()
+  }
+
+  const ativo = aberto ? proximo : null
+  const resumo = rascunho.de && rascunho.ate
+    ? `${formatar(rascunho.de)} → ${formatar(rascunho.ate)} · ${plural(diasEntre(rascunho.de, rascunho.ate))}`
+    : rascunho.de ? `${formatar(rascunho.de)} → escolha a data final` : 'Escolha a data inicial'
+
+  return (
+    <div ref={raizRef} className={`mf-periodo${className ? ` ${className}` : ''}`}>
+      <span className={`mf-periodo-campo${ativo === 'de' ? ' ativo' : ''}`}>
+        <input
+          type="date" aria-label={`${ariaLabel ?? 'Período'} de`} value={valor.de} disabled={disabled} className={inputClassName}
+          min={min} max={valor.ate || max}
+          onClick={() => abrir('de')} onFocus={() => abrir('de')}
+          onChange={e => onChange({ ...valor, de: e.target.value })}
+        />
+        <CalendarBlank size={14} />
+      </span>
+      <span style={{ color: 'var(--c-neutral)', fontSize: 11 }}>→</span>
+      <span className={`mf-periodo-campo${ativo === 'ate' ? ' ativo' : ''}`}>
+        <input
+          type="date" aria-label={`${ariaLabel ?? 'Período'} até`} value={valor.ate} disabled={disabled} className={inputClassName}
+          min={valor.de || min} max={max}
+          onClick={() => abrir('ate')} onFocus={() => abrir('ate')}
+          onChange={e => onChange({ ...valor, ate: e.target.value })}
+        />
+        <CalendarBlank size={14} />
+      </span>
+
+      {aberto && posicao && createPortal(
+        <div ref={painelRef} className="mf-periodo-pop" role="dialog" aria-label="Escolher período" style={{ top: posicao.top, left: posicao.left }}>
+          <div className="mf-periodo-meses">
+            <button type="button" className="mf-periodo-nav mf-periodo-nav--ant" onClick={() => setEsquerda(e => somarMeses(e, -1))} aria-label="Mês anterior">
+              <CaretLeft size={14} weight="bold" />
+            </button>
+            {Array.from({ length: meses }, (_, i) => (
+              <MesDoCalendario
+                key={i} visivel={somarMeses(esquerda, i)} rascunho={rascunho}
+                previa={proximo === 'ate' ? previa : null}
+                onEscolher={escolher} onPassar={setPrevia} min={min} max={max}
+              />
+            ))}
+            <button type="button" className="mf-periodo-nav mf-periodo-nav--prox" onClick={() => setEsquerda(e => somarMeses(e, 1))} aria-label="Próximo mês">
+              <CaretRight size={14} weight="bold" />
+            </button>
+          </div>
+          <div className="mf-periodo-rodape">
+            <span className="mf-periodo-resumo">{resumo}</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" className="mf-btn-clear" onClick={fechar}><X size={14} /> Cancelar</button>
+              <button type="button" className="mf-btn-search" onClick={confirmar} disabled={!rascunho.de || !rascunho.ate}>
+                <Check size={14} /> Confirmar
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+    </div>
+  )
+}
+
+=== Date picker | SeletorDeData.tsx
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { CalendarBlank, CaretLeft, CaretRight, X } from '@phosphor-icons/react'
+import {
+  LARGURA_UM_MES, MESES, MesDoCalendario, hojeIso, somarMeses, type MesVisivel,
+} from '@/components/shared/SeletorDePeriodo'
+
+// Data única no mesmo visual do SeletorDePeriodo: o campo de data de sempre (aceita digitação), mas
+// o clique abre um calendário de um mês. Um clique no dia grava e fecha; o rodapé mostra a data por
+// extenso e as opções Limpar e Hoje (as mesmas do calendário nativo). Esc ou clique fora fecham sem
+// alterar. Data em ISO (AAAA-MM-DD); "" = vazio.
+
+const DIAS_DA_SEMANA_POR_EXTENSO = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
+
+function porExtenso(valor: string): string {
+  const [a, m, d] = valor.split('-').map(Number)
+  return `${DIAS_DA_SEMANA_POR_EXTENSO[new Date(a, m - 1, d).getDay()]}, ${d} de ${MESES[m - 1].toLowerCase()} de ${a}`
+}
+
+function mesDe(valor: string): MesVisivel {
+  const [a, m] = (valor || hojeIso()).split('-').map(Number)
+  return { ano: a, mes: m - 1 }
+}
+
+export function SeletorDeData({
+  valor, onChange, className, ariaLabel, id, disabled, readOnly, min, max, inputClassName, compacto, title, onBlur, onEscolher,
+}: {
+  valor: string
+  onChange: (valor: string) => void
+  className?: string
+  ariaLabel?: string
+  id?: string
+  disabled?: boolean
+  readOnly?: boolean
+  /** Limites (ISO): os dias fora deles ficam desabilitados no calendário. */
+  min?: string
+  max?: string
+  /** Classe extra no <input> (ex.: mf-input-error). */
+  inputClassName?: string
+  /** 28px de altura — campo dentro de linha de tabela. */
+  compacto?: boolean
+  title?: string
+  onBlur?: () => void
+  /** Escolha feita no calendário (dia, Limpar ou Hoje) — não dispara enquanto se digita. */
+  onEscolher?: (valor: string) => void
+}) {
+  const [aberto, setAberto] = useState(false)
+  const [visivel, setVisivel] = useState<MesVisivel>(() => mesDe(valor))
+  const [posicao, setPosicao] = useState<{ top: number; left: number } | null>(null)
+  const raizRef = useRef<HTMLDivElement>(null)
+  const painelRef = useRef<HTMLDivElement>(null)
+
+  function abrir() {
+    if (disabled || readOnly) return
+    if (!aberto) setVisivel(mesDe(valor))
+    setAberto(true)
+  }
+  function escolher(dia: string) {
+    onChange(dia)
+    onEscolher?.(dia)
+    setAberto(false)
+  }
+
+  // Posição fixa abaixo do campo, sem passar da borda direita da janela.
+  useEffect(() => {
+    if (!aberto) return
+    function atualizar() {
+      const r = raizRef.current?.getBoundingClientRect()
+      if (!r) return
+      setPosicao({ top: r.bottom + 6, left: Math.max(12, Math.min(r.left, window.innerWidth - LARGURA_UM_MES - 12)) })
+    }
+    atualizar()
+    window.addEventListener('scroll', atualizar, true)
+    window.addEventListener('resize', atualizar)
+    return () => {
+      window.removeEventListener('scroll', atualizar, true)
+      window.removeEventListener('resize', atualizar)
+    }
+  }, [aberto])
+
+  useEffect(() => {
+    if (!aberto) return
+    function aoClicarFora(e: MouseEvent) {
+      const alvo = e.target as Node
+      if (raizRef.current?.contains(alvo) || painelRef.current?.contains(alvo)) return
+      setAberto(false)
+    }
+    // Esc fecha só o calendário, não o drawer em volta.
+    function aoTeclar(e: KeyboardEvent) { if (e.key === 'Escape') { e.stopPropagation(); setAberto(false) } }
+    document.addEventListener('mousedown', aoClicarFora)
+    document.addEventListener('keydown', aoTeclar, true)
+    return () => {
+      document.removeEventListener('mousedown', aoClicarFora)
+      document.removeEventListener('keydown', aoTeclar, true)
+    }
+  }, [aberto])
+
+  return (
+    <div ref={raizRef} className={`mf-periodo mf-data${compacto ? ' mf-data--compacta' : ''}${className ? ` ${className}` : ''}`}>
+      <span className={`mf-periodo-campo${aberto ? ' ativo' : ''}`}>
+        <input
+          type="date" id={id} aria-label={ariaLabel} title={title} value={valor} className={inputClassName}
+          disabled={disabled} readOnly={readOnly} min={min} max={max}
+          onClick={abrir} onFocus={abrir} onBlur={onBlur}
+          onChange={e => onChange(e.target.value)}
+        />
+        <CalendarBlank size={14} />
+      </span>
+
+      {aberto && posicao && createPortal(
+        <div ref={painelRef} className="mf-periodo-pop" role="dialog" aria-label="Escolher data" style={{ top: posicao.top, left: posicao.left }}>
+          <div className="mf-periodo-meses">
+            <button type="button" className="mf-periodo-nav mf-periodo-nav--ant" onClick={() => setVisivel(v => somarMeses(v, -1))} aria-label="Mês anterior">
+              <CaretLeft size={14} weight="bold" />
+            </button>
+            {/* Início e fim iguais: o dia escolhido aparece destacado, sem faixa de intervalo. */}
+            <MesDoCalendario
+              visivel={visivel} rascunho={{ de: valor, ate: valor }} previa={null}
+              onEscolher={escolher} onPassar={() => {}} min={min} max={max}
+            />
+            <button type="button" className="mf-periodo-nav mf-periodo-nav--prox" onClick={() => setVisivel(v => somarMeses(v, 1))} aria-label="Próximo mês">
+              <CaretRight size={14} weight="bold" />
+            </button>
+          </div>
+          <div className="mf-periodo-rodape mf-data-rodape">
+            <span className="mf-periodo-resumo">{valor ? porExtenso(valor) : 'Nenhuma data escolhida'}</span>
+            <div className="mf-data-botoes">
+              <button type="button" className="mf-btn-clear" onClick={() => escolher('')}><X size={14} /> Limpar</button>
+              <button type="button" className="mf-btn-search" onClick={() => escolher(hojeIso())}
+                disabled={(!!min && hojeIso() < min) || (!!max && hojeIso() > max)}>Hoje</button>
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
+    </div>
+  )
+}
+
+=== Date picker | seletor-de-data.css
+/* Seletor de período De → Até (SeletorDePeriodo.tsx) e data única (SeletorDeData.tsx). Os campos têm o
+   mesmo visual dos campos de data dos filtros; o ícone nativo some e no lugar fica o CalendarBlank,
+   porque o clique abre o calendário próprio (.mf-periodo-pop), renderizado em portal. */
+.mf-periodo { display: flex; align-items: center; gap: 8px; }
+.mf-periodo-campo { position: relative; display: flex; align-items: center; }
+/* Dentro de uma linha de filtro (.mf-row-val): os dois campos dividem a largura, como os outros campos. */
+.mf-periodo--preenche { flex: 1; min-width: 0; }
+.mf-periodo--preenche .mf-periodo-campo { flex: 1 1 0; min-width: 0; }
+.mf-periodo-campo input[type="date"] {
+  width: 100%;
+  height: 32px;
+  border: 1.5px solid var(--dk-border, #e2e8f0);
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: var(--dk-text-2, #374151);
+  padding: 0 32px 0 16px;
+  background: var(--dk-surface, #fff);
+  min-width: 0;
+  cursor: pointer;
+}
+.mf-periodo-campo input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
+.mf-periodo-campo.ativo input[type="date"] { border-color: var(--c-support); }
+.mf-periodo-campo svg {
+  position: absolute;
+  right: 12px;
+  color: var(--dk-text-2, #374151);
+  pointer-events: none;
+}
+
+/* Acima dos drawers (9001) e das modais de lote (9200): o seletor de data também abre dentro deles.
+   Abaixo do zoom de figura (9500). */
+.mf-periodo-pop {
+  position: fixed;
+  z-index: 9400;
+  padding: 16px 20px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+}
+.mf-periodo-meses { position: relative; display: flex; gap: 32px; }
+.mf-periodo-nav {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--c-neutral);
+  cursor: pointer;
+}
+.mf-periodo-nav:hover { background: var(--dk-hover, #EFF6FF); color: var(--c-support); }
+.mf-periodo-nav--ant { left: 0; }
+.mf-periodo-nav--prox { right: 0; }
+.mf-periodo-mes-tit {
+  height: 28px;
+  line-height: 28px;
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text);
+}
+.mf-periodo-grade { display: grid; grid-template-columns: repeat(7, 36px); row-gap: 4px; }
+.mf-periodo-sem {
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-neutral);
+}
+.mf-periodo-dia {
+  position: relative;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: var(--c-text);
+  cursor: pointer;
+}
+.mf-periodo-dia:hover { background: var(--dk-hover, #EFF6FF); }
+.mf-periodo-dia.hoje { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.mf-periodo-dia.no-intervalo {
+  border-radius: 0;
+  background: color-mix(in srgb, var(--c-support) 12%, transparent);
+  color: var(--c-support);
+}
+.mf-periodo-dia.no-intervalo.borda-esq { border-radius: 8px 0 0 8px; }
+.mf-periodo-dia.no-intervalo.borda-dir { border-radius: 0 8px 8px 0; }
+.mf-periodo-dia.no-intervalo.borda-esq.borda-dir { border-radius: 8px; }
+.mf-periodo-dia.ponta { background: var(--c-support); color: #fff; font-weight: 700; }
+.mf-periodo-dica {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #374151;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
+}
+.mf-periodo-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--c-border);
+}
+.mf-periodo-resumo { font-size: 12px; color: var(--c-neutral); }
+
+/* Data única (SeletorDeData.tsx): mesmo campo e mesmo calendário do período, com um mês só. O campo
+   ocupa a largura do formulário; no rodapé, a data por extenso fica em cima e os botões Limpar / Hoje
+   sempre alinhados à direita. */
+.mf-data { width: 100%; }
+.mf-data .mf-periodo-campo { flex: 1; min-width: 0; }
+.mf-data-rodape { flex-direction: column; align-items: stretch; gap: 8px; }
+.mf-data-botoes { display: flex; justify-content: flex-end; gap: 8px; }
+/* Estados dos campos (data única e período), iguais aos dos outros campos. */
+.mf-periodo-campo input[type="date"]:disabled,
+.mf-periodo-campo input[type="date"]:read-only { background: var(--c-input-bg-disabled); cursor: not-allowed; }
+.mf-periodo-campo input[type="date"].mf-input-error { border-color: var(--c-input-error); }
+.mf-periodo-dia:disabled { color: var(--c-text-muted); opacity: .45; cursor: not-allowed; background: none; }
+/* Compacto: dentro de linha de tabela (28px). */
+.mf-data--compacta .mf-periodo-campo input[type="date"] { height: 28px; font-size: 12px; padding: 0 28px 0 8px; }
+.mf-data--compacta .mf-periodo-campo svg { right: 8px; }
+
+=== Date picker | botoes-do-calendario.css
+/* Botões do rodapé do calendário (Cancelar / Confirmar / Limpar / Hoje): 40px, Inter 14/600, raio 8. */
+.mf-btn-clear,
+.mf-btn-search {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.mf-btn-clear {
+  background: transparent;
+  border-color: var(--dk-border, #e2e8f0);
+  color: var(--dk-text-2, #51515C);
+}
+
+.mf-btn-search {
+  background: var(--c-support);
+  border-color: var(--c-support);
+  color: #fff;
+}
+
+/* Desabilitado (Confirmar sem De/Até; Hoje fora de min/max) */
+.mf-btn-search:disabled {
+  background: var(--dk-border, #cbd5e1) !important;
+  border-color: var(--dk-border, #cbd5e1) !important;
+  color: #fff !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+.mf-btn-clear:disabled {
+  background: var(--dk-surface, #fff) !important;
+  border-color: var(--c-border) !important;
+  color: var(--dk-muted, #cbd5e1) !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
+=== Date picker | tokens-do-calendario.css
+:root {
+  --c-support: #0059AD;            /* cor de destaque (muda por tema) */
+  --c-neutral: #6B7280;
+  --c-text: #1F2937;
+  --c-text-muted: #9CA3AF;
+  --c-border: #E5E7EB;
+  --c-surface: #FFFFFF;
+  --c-input-bg-disabled: #F6F6FF;
+  --c-input-error: #D22D37;
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, .15), 0 4px 12px rgba(0, 0, 0, .08);
+}
+
+/* Modo escuro: os tokens --dk-* existem SÓ no escuro (no claro, o fallback literal do var(--dk-x, #cor) vale). */
+html.dark-mode {
+  --c-surface: #161D26;
+  --c-text: #E6EAF0;
+  --c-border: #2A3542;
+  --c-neutral: #9AA5B4;
+  --c-text-muted: #6E7A8A;
+  --c-input-bg-disabled: #1C2530;
+
+  --dk-surface: var(--c-surface);
+  --dk-text-2: #C5CDD8;                       /* = --c-table-head-txt no escuro */
+  --dk-muted: var(--c-text-muted);
+  --dk-border: var(--c-border);
+  --dk-hover: color-mix(in srgb, var(--c-support) 16%, var(--c-surface));
+}
+/* Fallbacks do claro (já embutidos no CSS): --dk-border #e2e8f0 · --dk-text-2 #374151 (campo) / #51515C (botão) · --dk-surface #fff · --dk-hover #EFF6FF · --dk-muted #cbd5e1 */
+
+=== x-ajuda | AjudaDaTela.tsx
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+import {
+  Question, X, CaretDown, CornersOut, CornersIn, Info,
+  Target, CalendarBlank, UserPlus, Lightbulb, Globe, Gauge, MagnifyingGlass, ListChecks, Warning, BookOpen,
+  type Icon,
+} from '@phosphor-icons/react'
+import { AJUDA_DAS_PAGINAS } from '@/utils/ajudaDasPaginas'
+
+/** Ícones que o conteúdo pode usar pelo nome (texto, para dar para configurar no backoffice). */
+export const ICONES_DA_AJUDA: Record<string, Icon> = {
+  alvo: Target,
+  calendario: CalendarBlank,
+  cliente: UserPlus,
+  ideia: Lightbulb,
+  mundo: Globe,
+  score: Gauge,
+  pesquisa: MagnifyingGlass,
+  passos: ListChecks,
+  atencao: Warning,
+  leitura: BookOpen,
+  info: Info,
+}
+
+function IconeDoTopico({ nome }: { nome?: string }) {
+  const Icone = nome ? ICONES_DA_AJUDA[nome] : undefined
+  return Icone ? <Icone size={16} style={{ flexShrink: 0 }} /> : null
+}
+
+/**
+ * Texto livre da ajuda → parágrafos e listas. Linha em branco separa blocos; linhas que começam
+ * com "- " formam uma lista. Mantém o conteúdo como texto simples (configurável pelo backoffice).
+ */
+function TextoDaAjuda({ texto }: { texto: string }) {
+  const blocos = texto.split(/\n\s*\n/).map(b => b.split('\n').map(l => l.trim()).filter(Boolean))
+  return (
+    <div className="mp-ajuda-texto">
+      {blocos.map((linhas, i) => {
+        const itens = linhas.filter(l => l.startsWith('- '))
+        if (itens.length === linhas.length) {
+          return <ul key={i}>{itens.map((l, j) => <li key={j}>{l.slice(2)}</li>)}</ul>
+        }
+        return linhas.map((l, j) => l.startsWith('- ')
+          ? <ul key={`${i}-${j}`}><li>{l.slice(2)}</li></ul>
+          : <p key={`${i}-${j}`}>{l}</p>)
+      })}
+    </div>
+  )
+}
+
+/**
+ * "Ajuda desta página": botão flutuante (canto inferior direito) que abre um painel com a
+ * descrição da página e os tópicos em combos (um aberto por vez). "Expandir" leva para tela
+ * cheia, com os títulos à esquerda e o texto à direita. O conteúdo vem de AJUDA_DAS_PAGINAS pela
+ * chave da página; sem conteúdo cadastrado, nada aparece. Fica abaixo dos drawers (z-index 9000).
+ */
+export function AjudaDaTela({ pagina }: { pagina: string }) {
+  const ajuda = AJUDA_DAS_PAGINAS[pagina]
+  const [aberto, setAberto] = useState(false)
+  const [telaCheia, setTelaCheia] = useState(false)
+  // Índice do tópico aberto; -1 = nenhum (no painel) / descrição (na tela cheia).
+  const [topicoAberto, setTopicoAberto] = useState(-1)
+
+  useEffect(() => {
+    if (!aberto) return
+    const aoTeclar = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (telaCheia) setTelaCheia(false)
+      else setAberto(false)
+    }
+    window.addEventListener('keydown', aoTeclar)
+    return () => window.removeEventListener('keydown', aoTeclar)
+  }, [aberto, telaCheia])
+
+  if (!ajuda) return null
+  const { titulo, descricao, topicos } = ajuda
+
+  function fechar() {
+    setAberto(false)
+    setTelaCheia(false)
+  }
+
+  const cabecalho = (
+    <div className="mp-ajuda-hdr">
+      <span className="mp-ajuda-hdr-icone"><Question size={16} weight="fill" /></span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="mp-ajuda-hdr-sub">Ajuda desta página</div>
+        <div className="mp-ajuda-hdr-titulo">{titulo}</div>
+      </div>
+      <button type="button" className="mp-ajuda-acao" onClick={() => setTelaCheia(v => !v)}
+        title={telaCheia ? 'Voltar ao painel' : 'Ver em tela cheia'} aria-label={telaCheia ? 'Voltar ao painel' : 'Ver em tela cheia'}>
+        {telaCheia ? <CornersIn size={16} /> : <CornersOut size={16} />}
+      </button>
+      <button type="button" className="mp-ajuda-acao" onClick={fechar} title="Fechar" aria-label="Fechar ajuda">
+        <X size={16} />
+      </button>
+    </div>
+  )
+
+  return createPortal(
+    <>
+      {!aberto && (
+        <button type="button" className="mp-ajuda-fab" onClick={() => setAberto(true)}
+          title="Ajuda desta página" aria-label={`Abrir ajuda da página ${titulo}`}>
+          <Question size={24} weight="fill" />
+        </button>
+      )}
+
+      {aberto && !telaCheia && (
+        <div className="mp-ajuda-painel" role="dialog" aria-label={`Ajuda: ${titulo}`}>
+          {cabecalho}
+          <div className="mp-ajuda-corpo">
+            <p className="mp-ajuda-resumo">{descricao}</p>
+            {topicos.map((t, i) => {
+              const estaAberto = topicoAberto === i
+              return (
+                <div key={i} className={`mp-ajuda-topico${estaAberto ? ' aberto' : ''}${t.icone && ICONES_DA_AJUDA[t.icone] ? ' com-icone' : ''}`}>
+                  <button type="button" className="mp-ajuda-topico-btn" aria-expanded={estaAberto}
+                    onClick={() => setTopicoAberto(estaAberto ? -1 : i)}>
+                    <span className="mp-ajuda-topico-icone"><IconeDoTopico nome={t.icone} /></span>
+                    <span style={{ flex: 1 }}>{t.titulo}</span>
+                    <CaretDown size={14} style={{ transition: 'transform .15s', transform: estaAberto ? 'rotate(180deg)' : 'none', flexShrink: 0 }} />
+                  </button>
+                  {estaAberto && <TextoDaAjuda texto={t.texto} />}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {aberto && telaCheia && (
+        <>
+          <div className="mp-ajuda-overlay" onClick={() => setTelaCheia(false)} />
+          <div className="mp-ajuda-cheia" role="dialog" aria-label={`Ajuda: ${titulo}`}>
+            {cabecalho}
+            <div className="mp-ajuda-cheia-miolo">
+              <nav className="mp-ajuda-cheia-nav">
+                <button type="button" onClick={() => setTopicoAberto(-1)}
+                  className={`mp-ajuda-nav-item${topicoAberto === -1 ? ' ativo' : ''}`}>
+                  <Info size={16} style={{ flexShrink: 0 }} />
+                  Sobre a página
+                </button>
+                {topicos.map((t, i) => (
+                  <button key={i} type="button" onClick={() => setTopicoAberto(i)}
+                    className={`mp-ajuda-nav-item${topicoAberto === i ? ' ativo' : ''}`}>
+                    <IconeDoTopico nome={t.icone} />
+                    {t.titulo}
+                  </button>
+                ))}
+              </nav>
+              <div className="mp-ajuda-cheia-conteudo">
+                {topicoAberto === -1 || !topicos[topicoAberto] ? (
+                  <>
+                    <h3 className="mp-ajuda-cheia-titulo">{titulo}</h3>
+                    <TextoDaAjuda texto={descricao} />
+                  </>
+                ) : (
+                  <>
+                    <h3 className="mp-ajuda-cheia-titulo">{topicos[topicoAberto].titulo}</h3>
+                    <TextoDaAjuda texto={topicos[topicoAberto].texto} />
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </>,
+    document.body,
+  )
+}
+
+=== x-pdf | PdfPreviewModal.tsx
+import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
+import { DownloadSimple, X } from '@phosphor-icons/react'
+
+interface PdfPreviewModalProps {
+  titulo: string
+  /** URL blob: do PDF já gerado — quem abre o modal cria e revoga (URL.revokeObjectURL). */
+  url: string
+  nomeDoArquivo: string
+  onClose: () => void
+}
+
+/** Pré-visualização de PDF gerado na plataforma: o visualizador nativo do navegador num iframe,
+ * com "Baixar PDF" e fechar no cabeçalho. Fecha com Esc ou clique fora. */
+export function PdfPreviewModal({ titulo, url, nomeDoArquivo, onClose }: PdfPreviewModalProps) {
+  useEffect(() => {
+    const aoTeclar = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', aoTeclar)
+    return () => window.removeEventListener('keydown', aoTeclar)
+  }, [onClose])
+
+  function baixar() {
+    const link = document.createElement('a')
+    link.href = url
+    link.download = nomeDoArquivo
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  return createPortal(
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+    >
+      <div
+        role="dialog" aria-modal="true" aria-label={titulo}
+        onClick={e => e.stopPropagation()}
+        style={{ background: 'var(--c-surface)', width: '100%', maxWidth: 1120, height: '90vh', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: 'var(--shadow-lg)' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '12px 16px', borderBottom: '1px solid var(--c-border)', background: 'var(--c-surface-2)', flexShrink: 0 }}>
+          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--c-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{titulo}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+            <button type="button" className="mf-btn-search" onClick={baixar}>
+              <DownloadSimple size={14} /> Imprimir / Baixar PDF
+            </button>
+            <button type="button" className="pdd-close" onClick={onClose} title="Fechar">
+              <X size={16} weight="bold" />
+            </button>
+          </div>
+        </div>
+        <div style={{ flex: 1, padding: 16, background: 'var(--c-bg)', display: 'flex' }}>
+          {/* navpanes=0: abre sem o painel de miniaturas do visualizador. */}
+          <iframe src={`${url}#navpanes=0`} title={titulo} style={{ flex: 1, width: '100%', border: '1px solid var(--c-border)', borderRadius: 8, background: '#fff' }} />
+        </div>
+      </div>
+    </div>,
+    document.body,
+  )
+}
+
+=== x-richtext | RichTextEditor.tsx
+import { useEffect } from 'react'
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import Link from '@tiptap/extension-link'
+import { TextB, TextItalic, TextAa, LinkSimple, LinkBreak } from '@phosphor-icons/react'
+
+interface RichTextEditorProps {
+  value: string
+  onChange: (html: string) => void
+  placeholder?: string
+}
+
+// Editor WYSIWYG do campo de corpo de notícia. Toolbar mínima: negrito, itálico, "parágrafo" (reverte um
+// heading digitado por atalho de markdown do StarterKit — ex.: "# " — de volta a texto normal) e link.
+// Sem imagem embutida (imagem só no banner, nunca no corpo da notícia).
+//
+// Pacotes: @tiptap/react, @tiptap/starter-kit, @tiptap/pm e @tiptap/extension-link — o StarterKit (v3)
+// não inclui a mark de link, por isso o pacote irmão é necessário (mesma major version).
+export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Link.configure({ openOnClick: false, autolink: false }),
+    ],
+    content: value,
+    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    editorProps: {
+      attributes: {
+        class: 'rich-text-editor-content',
+      },
+    },
+  })
+
+  // Sincroniza valor externo (ex.: troca de item no formulário de edição, reset do form) sem
+  // sobrescrever o conteúdo a cada re-render provocado pelo próprio onUpdate do editor.
+  useEffect(() => {
+    if (!editor) return
+    const current = editor.getHTML()
+    if (value !== current) editor.commands.setContent(value, { emitUpdate: false })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value, editor])
+
+  if (!editor) return null
+
+  function onToggleLink() {
+    if (editor.isActive('link')) {
+      editor.chain().focus().unsetLink().run()
+      return
+    }
+    const url = window.prompt('URL do link:')
+    if (!url) return
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+  }
+
+  return (
+    <div className="rich-text-editor">
+      <div className="rich-text-editor-toolbar">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={editor.isActive('bold') ? 'active' : ''}
+          title="Negrito"
+        >
+          <TextB size={14} weight="bold" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={editor.isActive('italic') ? 'active' : ''}
+          title="Itálico"
+        >
+          <TextItalic size={14} />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setParagraph().run()}
+          className={editor.isActive('paragraph') ? 'active' : ''}
+          title="Parágrafo"
+        >
+          <TextAa size={14} />
+        </button>
+        <button
+          type="button"
+          onClick={onToggleLink}
+          className={editor.isActive('link') ? 'active' : ''}
+          title={editor.isActive('link') ? 'Remover link' : 'Inserir link'}
+        >
+          {editor.isActive('link') ? <LinkBreak size={14} /> : <LinkSimple size={14} />}
+        </button>
+      </div>
+      <EditorContent editor={editor} className="rich-text-editor-body" data-placeholder={placeholder} />
+    </div>
+  )
+}
+
+=== x-richtext | rich-text-editor.css
+.rich-text-editor { border: 1.5px solid var(--c-border); border-radius: 8px; overflow: hidden; background: var(--c-surface); }
+.rich-text-editor:focus-within { border-color: var(--c-support); }
+.rich-text-editor-toolbar { display: flex; gap: 4px; padding: 6px; border-bottom: 1px solid var(--c-border); background: var(--c-surface-2); }
+.rich-text-editor-toolbar button { display: grid; place-items: center; width: 28px; height: 28px; border: none; border-radius: 6px; background: transparent; color: var(--c-text); cursor: pointer; }
+.rich-text-editor-toolbar button:hover { background: var(--c-border-soft); }
+.rich-text-editor-toolbar button.active { background: var(--c-border); color: var(--c-support); }
+.rich-text-editor-content { min-height: 120px; padding: 12px; font-size: 13px; line-height: 1.5; color: var(--c-text); outline: none; }
+.rich-text-editor-content a { color: var(--c-support); text-decoration: underline; }
+.rich-text-editor-body[data-placeholder] .is-editor-empty:first-child::before { content: attr(data-placeholder); float: left; height: 0; color: var(--c-text-muted); pointer-events: none; }
+
+=== x-calc-datas | CalcDatasModal.tsx
+import { useState } from 'react'
+import { X } from '@phosphor-icons/react'
+import { SeletorDeData } from '@/components/shared/SeletorDeData'
+
+type Aba = 'calc' | 'entre' | 'diaSemana'
+
+const DIAS = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
+const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+function addDias(date: Date, n: number, soUteis: boolean): Date {
+  const d = new Date(date)
+  let added = 0
+  const dir = n >= 0 ? 1 : -1
+  const target = Math.abs(n)
+  while (added < target) {
+    d.setDate(d.getDate() + dir)
+    if (!soUteis || (d.getDay() !== 0 && d.getDay() !== 6)) added++
+  }
+  return d
+}
+
+function diffDias(a: Date, b: Date, soUteis: boolean): number {
+  if (a > b) [a, b] = [b, a]
+  if (!soUteis) {
+    return Math.round((b.getTime() - a.getTime()) / 86_400_000)
+  }
+  let count = 0
+  const d = new Date(a)
+  while (d < b) {
+    d.setDate(d.getDate() + 1)
+    if (d.getDay() !== 0 && d.getDay() !== 6) count++
+  }
+  return count
+}
+
+function fmt(d: Date) {
+  return `${String(d.getDate()).padStart(2, '0')}/${MESES[d.getMonth()]}/${d.getFullYear()}`
+}
+
+interface Props { onClose: () => void }
+
+export function CalcDatasModal({ onClose }: Props) {
+  const [aba, setAba] = useState<Aba>('calc')
+
+  // Aba 1 — Cálculo de datas
+  const [baseDate, setBaseDate] = useState('')
+  const [dias, setDias] = useState('')
+  const [soUteis, setSoUteis] = useState(false)
+  const [resultCalc, setResultCalc] = useState<string | null>(null)
+
+  // Aba 2 — Entre datas
+  const [dateA, setDateA] = useState('')
+  const [dateB, setDateB] = useState('')
+  const [soUteisEntre, setSoUteisEntre] = useState(false)
+  const [resultEntre, setResultEntre] = useState<string | null>(null)
+
+  // Aba 3 — Dia da semana
+  const [dateSemana, setDateSemana] = useState('')
+  const [resultSemana, setResultSemana] = useState<string | null>(null)
+
+  function calcDatas() {
+    if (!baseDate || !dias || isNaN(Number(dias))) return
+    const result = addDias(new Date(baseDate + 'T12:00:00'), Number(dias), soUteis)
+    setResultCalc(fmt(result))
+  }
+
+  function calcEntre() {
+    if (!dateA || !dateB) return
+    const d = diffDias(new Date(dateA + 'T12:00:00'), new Date(dateB + 'T12:00:00'), soUteisEntre)
+    setResultEntre(`${d} dia${d !== 1 ? 's' : ''} ${soUteisEntre ? 'úteis' : 'corridos'}`)
+  }
+
+  function calcSemana() {
+    if (!dateSemana) return
+    const d = new Date(dateSemana + 'T12:00:00')
+    setResultSemana(`${DIAS[d.getDay()]} — ${fmt(d)}`)
+  }
+
+  const abaClass = (a: Aba) => `calc-aba${aba === a ? ' is-ativa' : ''}`
+
+  return (
+    <div className="modal-ov">
+      <div className="modal calc-datas-modal">
+        <div className="modal__hdr">
+          <h2 className="modal__titulo">Utilitário de Datas</h2>
+          <button onClick={onClose} className="modal__fechar" aria-label="Fechar"><X size={16} /></button>
+        </div>
+
+        <div className="tabs">
+          <button className={abaClass('calc')} onClick={() => setAba('calc')}>Cálculo</button>
+          <button className={abaClass('entre')} onClick={() => setAba('entre')}>Entre datas</button>
+          <button className={abaClass('diaSemana')} onClick={() => setAba('diaSemana')}>Dia da semana</button>
+        </div>
+
+        <div className="calc-corpo">
+          {aba === 'calc' && (
+            <>
+              <label className="fg"><span>Data base</span>
+                <SeletorDeData valor={baseDate} onChange={setBaseDate} ariaLabel="Data base" />
+              </label>
+              <label className="fg"><span>Número de dias (negativo para subtrair)</span>
+                <input type="number" value={dias} onChange={e => setDias(e.target.value)} />
+              </label>
+              <label className="check-lbl">
+                <input type="checkbox" checked={soUteis} onChange={e => setSoUteis(e.target.checked)} />
+                Contar apenas dias úteis (seg–sex)
+              </label>
+              <button onClick={calcDatas} className="btn btn--success btn--filled btn--medium">Calcular</button>
+              {resultCalc && <p className="calc-resultado">{resultCalc}</p>}
+            </>
+          )}
+
+          {aba === 'entre' && (
+            <>
+              <label className="fg"><span>Data inicial</span>
+                <SeletorDeData valor={dateA} onChange={setDateA} ariaLabel="Data inicial" />
+              </label>
+              <label className="fg"><span>Data final</span>
+                <SeletorDeData valor={dateB} onChange={setDateB} ariaLabel="Data final" />
+              </label>
+              <label className="check-lbl">
+                <input type="checkbox" checked={soUteisEntre} onChange={e => setSoUteisEntre(e.target.checked)} />
+                Contar apenas dias úteis
+              </label>
+              <button onClick={calcEntre} className="btn btn--success btn--filled btn--medium">Calcular</button>
+              {resultEntre && <p className="calc-resultado">{resultEntre}</p>}
+            </>
+          )}
+
+          {aba === 'diaSemana' && (
+            <>
+              <label className="fg"><span>Data</span>
+                <SeletorDeData valor={dateSemana} onChange={setDateSemana} ariaLabel="Data" />
+              </label>
+              <button onClick={calcSemana} className="btn btn--success btn--filled btn--medium">Verificar</button>
+              {resultSemana && <p className="calc-resultado">{resultSemana}</p>}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+=== x-calc-datas | calc-datas.css
+.calc-datas-modal { max-width: 400px; padding: 20px 0 0; }
+.calc-datas-modal .modal__hdr { padding: 0 20px; margin-bottom: 12px; }
+.calc-datas-modal .tabs { padding: 0 20px; }
+.calc-aba { padding: 10px 14px; margin-bottom: -1px; border: none; border-bottom: 2px solid transparent; background: none; font: 600 12.5px 'Inter', sans-serif; color: var(--c-neutral); cursor: pointer; }
+.calc-aba.is-ativa { color: var(--c-support); border-bottom-color: var(--c-support); }
+.calc-corpo { display: flex; flex-direction: column; gap: 16px; padding: 20px; }
+.calc-resultado { margin: 0; padding: 12px; border-radius: 8px; background: var(--c-info-bg); color: var(--c-info-txt); text-align: center; font-size: 18px; font-weight: 700; }

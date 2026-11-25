@@ -1,0 +1,577 @@
+=== x-ajuda | ajuda-da-tela.css
+.mp-ajuda-fab { position: fixed; right: 24px; bottom: 24px; z-index: 9000; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 50%; background: var(--c-support); color: var(--c-surface); box-shadow: var(--shadow-lg); cursor: pointer; transition: transform .15s, background .15s; }
+.mp-ajuda-fab:hover { background: var(--c-support-h); transform: translateY(-2px); }
+.mp-ajuda-painel { position: fixed; right: 24px; bottom: 24px; z-index: 9000; display: flex; flex-direction: column; overflow: hidden; width: 384px; max-width: calc(100vw - 32px); max-height: 70vh; background: var(--c-surface); color: var(--c-text); border: 1px solid var(--c-border); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.mp-ajuda-hdr { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--c-border-soft); background: var(--c-surface-2); }
+.mp-ajuda-hdr-icone { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--c-support); color: var(--c-surface); }
+.mp-ajuda-hdr-sub { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--c-text-muted); }
+.mp-ajuda-hdr-titulo { font-size: 14px; font-weight: 700; }
+.mp-ajuda-acao { display: grid; place-items: center; width: 28px; height: 28px; border: none; border-radius: 6px; background: none; color: var(--c-neutral); cursor: pointer; }
+.mp-ajuda-acao:hover { background: var(--c-border-soft); }
+.mp-ajuda-corpo { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 14px; overflow-y: auto; }
+.mp-ajuda-resumo { margin: 0 0 4px; font-size: 12.5px; line-height: 1.5; color: var(--c-neutral); }
+.mp-ajuda-topico { border: 1px solid var(--c-border); border-radius: 8px; background: var(--c-surface); }
+.mp-ajuda-topico.aberto { border-color: var(--c-support); }
+.mp-ajuda-topico-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 10px 12px; border: none; background: none; font: 600 13px 'Inter', sans-serif; color: var(--c-text); text-align: left; cursor: pointer; }
+.mp-ajuda-topico-icone { display: inline-flex; color: var(--c-support); }
+.mp-ajuda-texto { padding: 0 12px 12px; font-size: 12.5px; line-height: 1.55; color: var(--c-neutral); }
+.mp-ajuda-texto p { margin: 0 0 8px; } .mp-ajuda-texto ul { margin: 0 0 8px; padding-left: 18px; }
+.mp-ajuda-overlay { position: fixed; inset: 0; z-index: 9600; background: rgba(0, 0, 0, .4); }
+.mp-ajuda-cheia { position: fixed; inset: 5vh 8vw; z-index: 9610; display: flex; flex-direction: column; overflow: hidden; background: var(--c-surface); border-radius: 14px; box-shadow: var(--shadow-lg); }
+.mp-ajuda-cheia-miolo { display: flex; flex: 1; min-height: 0; }
+.mp-ajuda-cheia-nav { display: flex; flex-direction: column; gap: 2px; width: 260px; padding: 12px; overflow-y: auto; border-right: 1px solid var(--c-border-soft); background: var(--c-surface-2); }
+.mp-ajuda-nav-item { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: none; border-radius: 8px; background: none; font: 600 12.5px 'Inter', sans-serif; color: var(--c-neutral); text-align: left; cursor: pointer; }
+.mp-ajuda-nav-item:hover { background: var(--c-border-soft); } .mp-ajuda-nav-item.ativo { background: color-mix(in srgb, var(--c-support) 10%, var(--c-surface)); color: var(--c-support); }
+.mp-ajuda-cheia-conteudo { flex: 1; padding: 24px 32px; overflow-y: auto; }
+.mp-ajuda-cheia-titulo { margin: 0 0 12px; font-size: 18px; font-weight: 800; }
+
+=== Accordion | Accordion.tsx
+import { useState, type ReactNode } from 'react'
+import { CaretDown } from '@phosphor-icons/react'
+
+interface Item { id: string; titulo: string; conteudo: ReactNode }
+
+/** Um item aberto por vez (multiplo = vários). */
+export function Accordion({ itens, multiplo = false }: { itens: Item[]; multiplo?: boolean }) {
+  const [abertos, setAbertos] = useState<string[]>([])
+  const alternar = (id: string) => setAbertos(a => a.includes(id) ? a.filter(x => x !== id) : multiplo ? [...a, id] : [id])
+  return (
+    <div className="acc">
+      {itens.map(i => {
+        const aberto = abertos.includes(i.id)
+        return (
+          <div key={i.id} className={`acc__item${aberto ? ' is-aberto' : ''}`}>
+            <button type="button" className="acc__btn" aria-expanded={aberto} onClick={() => alternar(i.id)}>
+              <span>{i.titulo}</span><CaretDown size={14} className="acc__seta" />
+            </button>
+            {aberto && <div className="acc__corpo">{i.conteudo}</div>}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+=== Accordion | accordion.css
+.acc { border: 1px solid var(--c-border); border-radius: 10px; overflow: hidden; background: var(--c-surface); }
+.acc__item + .acc__item { border-top: 1px solid var(--c-border-soft); }
+.acc__btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 16px; border: none; background: none; font: 600 13px 'Inter', sans-serif; color: var(--c-text); cursor: pointer; }
+.acc__btn:hover { background: var(--c-surface-2); }
+.acc__seta { color: var(--c-text-muted); transition: transform .15s; }
+.acc__item.is-aberto .acc__seta { transform: rotate(180deg); color: var(--c-support); }
+.acc__corpo { padding: 0 16px 16px; font-size: 12.5px; line-height: 1.5; color: var(--c-neutral); }
+
+=== Avatar | Avatar.tsx
+type Tamanho = 'small' | 'medium' | 'large'
+
+/** Foto ou iniciais. A cor do fundo vem de um token (nunca literal). */
+export function Avatar({ nome, src, tamanho = 'medium' }: { nome: string; src?: string; tamanho?: Tamanho }) {
+  const iniciais = nome.split(' ').filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase()
+  return (
+    <span className={`avatar avatar--${tamanho}`} title={nome} aria-label={nome}>
+      {src ? <img src={src} alt="" /> : iniciais}
+    </span>
+  )
+}
+
+=== Avatar | avatar.css
+.avatar { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; border-radius: 50%; background: var(--c-brand); color: var(--c-surface); font-weight: 700; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avatar--small  { width: 24px; height: 24px; font-size: 10px; }
+.avatar--medium { width: 32px; height: 32px; font-size: 12px; }
+.avatar--large  { width: 48px; height: 48px; font-size: 16px; }
+
+=== Breadcrumb | Breadcrumb.tsx
+import { Link } from 'react-router-dom'
+import { CaretRight } from '@phosphor-icons/react'
+
+export function Breadcrumb({ trilha }: { trilha: { rotulo: string; rota?: string }[] }) {
+  return (
+    <nav className="crumb" aria-label="Você está em">
+      {trilha.map((t, i) => (
+        <span key={i} className="crumb__item">
+          {i > 0 && <CaretRight size={10} />}
+          {t.rota ? <Link to={t.rota}>{t.rotulo}</Link> : <span aria-current="page">{t.rotulo}</span>}
+        </span>
+      ))}
+    </nav>
+  )
+}
+
+=== Breadcrumb | breadcrumb.css
+.crumb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--c-neutral); }
+.crumb__item { display: inline-flex; align-items: center; gap: 6px; }
+.crumb a { color: var(--c-neutral); text-decoration: none; }
+.crumb a:hover { color: var(--c-support); text-decoration: underline; }
+.crumb [aria-current='page'] { color: var(--c-text); font-weight: 600; }
+
+=== Carousel | Carousel.tsx
+import { useState, type ReactNode } from 'react'
+import { CaretLeft, CaretRight } from '@phosphor-icons/react'
+
+export function Carousel({ slides }: { slides: ReactNode[] }) {
+  const [i, setI] = useState(0)
+  const ir = (n: number) => setI((n + slides.length) % slides.length)
+  return (
+    <div className="car" role="region" aria-roledescription="carrossel">
+      <div className="car__trilho" style={{ transform: `translateX(-${i * 100}%)` }}>
+        {slides.map((s, k) => <div key={k} className="car__slide" aria-hidden={k !== i}>{s}</div>)}
+      </div>
+      <button type="button" className="car__nav car__nav--ant" onClick={() => ir(i - 1)} aria-label="Anterior"><CaretLeft size={16} weight="bold" /></button>
+      <button type="button" className="car__nav car__nav--prox" onClick={() => ir(i + 1)} aria-label="Próximo"><CaretRight size={16} weight="bold" /></button>
+      <div className="car__pontos">{slides.map((_, k) => <button key={k} type="button" className={k === i ? 'is-ativo' : ''} onClick={() => ir(k)} aria-label={`Slide ${k + 1}`} />)}</div>
+    </div>
+  )
+}
+
+=== Carousel | carousel.css
+.car { position: relative; overflow: hidden; border-radius: 12px; background: var(--c-surface-2); }
+.car__trilho { display: flex; transition: transform .3s cubic-bezier(.4, 0, .2, 1); }
+.car__slide { flex: 0 0 100%; min-width: 0; }
+.car__nav { position: absolute; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 32px; height: 32px; border: none; border-radius: 50%; background: var(--c-surface); color: var(--c-text); box-shadow: var(--shadow-md); cursor: pointer; }
+.car__nav--ant { left: 12px; } .car__nav--prox { right: 12px; }
+.car__pontos { position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; }
+.car__pontos button { width: 8px; height: 8px; padding: 0; border: none; border-radius: 50%; background: var(--c-border); cursor: pointer; }
+.car__pontos button.is-ativo { width: 20px; border-radius: 4px; background: var(--c-support); }
+
+=== Chips | Chip.tsx
+import { X } from '@phosphor-icons/react'
+
+/** Filtro/etiqueta selecionável. compacto = 32px. Com onRemover mostra o "x". */
+export function Chip({ rotulo, ativo = false, compacto = false, contagem, onClick, onRemover }: {
+  rotulo: string; ativo?: boolean; compacto?: boolean; contagem?: number; onClick?: () => void; onRemover?: () => void
+}) {
+  return (
+    <span className={`chip${ativo ? ' on' : ''}${compacto ? ' compacto' : ''}`}>
+      <button type="button" className="chip__btn" aria-pressed={ativo} onClick={onClick}>
+        {rotulo}{contagem != null && <span className="chip__n">{contagem}</span>}
+      </button>
+      {onRemover && <button type="button" className="chip__x" onClick={onRemover} aria-label={`Remover ${rotulo}`}><X size={12} weight="bold" /></button>}
+    </span>
+  )
+}
+
+=== Chips | chip.css
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 0 16px; height: 36px; border: 1.5px solid var(--c-border); border-radius: 20px; background: var(--c-surface); font: 600 12.5px 'Inter', sans-serif; color: var(--c-neutral); transition: all .12s; }
+.chip.compacto { height: 32px; padding: 0 12px; font-size: 12px; }
+.chip:hover:not(.on) { border-color: var(--c-support); color: var(--c-support); }
+.chip.on { background: var(--c-support); border-color: var(--c-support); color: var(--c-surface); }
+.chip__btn { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: none; background: none; font: inherit; color: inherit; cursor: pointer; }
+.chip__n { opacity: .7; }
+.chip__x { display: grid; place-items: center; width: 16px; height: 16px; padding: 0; border: none; border-radius: 50%; background: none; color: inherit; cursor: pointer; }
+.chip__x:hover { background: color-mix(in srgb, currentColor 18%, transparent); }
+
+=== Counter | Counter.tsx
+import { Minus, Plus } from '@phosphor-icons/react'
+
+export function Counter({ valor, min = 0, max = 99, onChange }: { valor: number; min?: number; max?: number; onChange: (v: number) => void }) {
+  return (
+    <div className="cnt" role="group" aria-label="Quantidade">
+      <button type="button" className="cnt__btn" disabled={valor <= min} onClick={() => onChange(valor - 1)} aria-label="Diminuir"><Minus size={14} weight="bold" /></button>
+      <output className="cnt__valor" aria-live="polite">{valor}</output>
+      <button type="button" className="cnt__btn" disabled={valor >= max} onClick={() => onChange(valor + 1)} aria-label="Aumentar"><Plus size={14} weight="bold" /></button>
+    </div>
+  )
+}
+
+=== Counter | counter.css
+.cnt { display: inline-flex; align-items: center; border: 1.5px solid var(--c-border); border-radius: 8px; background: var(--c-surface); overflow: hidden; }
+.cnt__btn { display: grid; place-items: center; width: 32px; height: 32px; border: none; background: none; color: var(--c-support); cursor: pointer; }
+.cnt__btn:hover:not(:disabled) { background: var(--c-surface-2); }
+.cnt__btn:disabled { color: var(--c-input-text-disabled); cursor: not-allowed; }
+.cnt__valor { min-width: 40px; text-align: center; font: 600 13px 'Inter', sans-serif; color: var(--c-text); }
+
+=== Dividers | Divider.tsx
+export function Divider({ vertical = false, rotulo }: { vertical?: boolean; rotulo?: string }) {
+  return rotulo
+    ? <div className="div div--rotulo" role="separator"><span>{rotulo}</span></div>
+    : <div className={`div${vertical ? ' div--v' : ''}`} role="separator" aria-orientation={vertical ? 'vertical' : 'horizontal'} />
+}
+
+=== Dividers | divider.css
+.div { height: 1px; background: var(--c-border-soft); margin: 16px 0; }
+.div--v { width: 1px; height: auto; align-self: stretch; margin: 0 12px; }
+.div--rotulo { display: flex; align-items: center; gap: 12px; height: auto; background: none; }
+.div--rotulo::before, .div--rotulo::after { content: ''; flex: 1; height: 1px; background: var(--c-border-soft); }
+.div--rotulo span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--c-text-muted); }
+
+=== Dropdown | Dropdown.tsx
+import { useEffect, useRef, useState } from 'react'
+import { CaretDown, Check } from '@phosphor-icons/react'
+
+interface Opcao { valor: string; rotulo: string }
+
+/** Lista suspensa estilizada. Fecha por mousedown fora e com Esc. Para poucas opções, prefira <select>. */
+export function Dropdown({ opcoes, valor, onChange, placeholder = 'Selecione' }: { opcoes: Opcao[]; valor: string; onChange: (v: string) => void; placeholder?: string }) {
+  const [aberto, setAberto] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!aberto) return
+    const fora = (e: MouseEvent) => { if (!ref.current?.contains(e.target as Node)) setAberto(false) }
+    const tecla = (e: KeyboardEvent) => { if (e.key === 'Escape') setAberto(false) }
+    document.addEventListener('mousedown', fora); document.addEventListener('keydown', tecla)
+    return () => { document.removeEventListener('mousedown', fora); document.removeEventListener('keydown', tecla) }
+  }, [aberto])
+  const atual = opcoes.find(o => o.valor === valor)
+  return (
+    <div className="dd" ref={ref}>
+      <button type="button" className="dd__btn" aria-haspopup="listbox" aria-expanded={aberto} onClick={() => setAberto(v => !v)}>
+        <span className={atual ? '' : 'dd__ph'}>{atual?.rotulo ?? placeholder}</span><CaretDown size={12} weight="bold" />
+      </button>
+      {aberto && (
+        <ul className="dd__lista" role="listbox">
+          {opcoes.map(o => (
+            <li key={o.valor} role="option" aria-selected={o.valor === valor} className={`dd__item${o.valor === valor ? ' is-sel' : ''}`} onClick={() => { onChange(o.valor); setAberto(false) }}>
+              {o.rotulo}{o.valor === valor && <Check size={14} weight="bold" />}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+=== Dropdown | dropdown.css
+.dd { position: relative; display: inline-block; min-width: 200px; }
+.dd__btn { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 36px; padding: 0 16px; border: 1.5px solid var(--c-border); border-radius: 8px; background: var(--c-surface); font: 13px 'Inter', sans-serif; color: var(--c-text); cursor: pointer; }
+.dd__btn:hover, .dd__btn[aria-expanded='true'] { border-color: var(--c-support); }
+.dd__ph { color: var(--c-text-muted); }
+.dd__lista { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 40; margin: 0; padding: 8px; list-style: none; max-height: 240px; overflow-y: auto; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 10px; box-shadow: var(--shadow-lg); }
+.dd__item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-radius: 6px; font-size: 12.5px; color: var(--c-text); cursor: pointer; }
+.dd__item:hover { background: var(--c-surface-2); }
+.dd__item.is-sel { color: var(--c-support); font-weight: 600; }
+
+=== Icon Button | IconButton.tsx
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
+
+/** Botão só de ícone (use o Button com iconOnly para o padrão completo). aria-label é obrigatório. */
+export function IconButton({ icone, rotulo, tamanho = 'small', perigo = false, ...rest }: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'> & { icone: ReactNode; rotulo: string; tamanho?: 'small' | 'medium' | 'large'; perigo?: boolean }) {
+  return <button type="button" className={`ibtn ibtn--${tamanho}${perigo ? ' ibtn--perigo' : ''}`} aria-label={rotulo} title={rotulo} {...rest}>{icone}</button>
+}
+
+=== Icon Button | icon-button.css
+.ibtn { display: inline-grid; place-items: center; flex-shrink: 0; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--c-neutral); cursor: pointer; transition: background .15s, color .15s; }
+.ibtn--small { width: 32px; height: 32px; } .ibtn--medium { width: 44px; height: 44px; } .ibtn--large { width: 56px; height: 56px; }
+.ibtn:hover:not(:disabled) { background: var(--c-surface-2); color: var(--c-support); }
+.ibtn--perigo:hover:not(:disabled) { background: var(--c-danger-bg); color: var(--c-danger); }
+.ibtn:disabled { color: var(--c-input-text-disabled); cursor: not-allowed; }
+.ibtn:focus-visible { outline: 2px solid var(--c-support); outline-offset: 2px; }
+
+=== Checkbox | Checkbox.tsx
+import type { InputHTMLAttributes } from 'react'
+
+export function Checkbox({ rotulo, indeterminado = false, ...rest }: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> & { rotulo: string; indeterminado?: boolean }) {
+  return (
+    <label className={`ck${rest.disabled ? ' is-desabilitado' : ''}`}>
+      <input type="checkbox" ref={el => { if (el) el.indeterminate = indeterminado }} {...rest} />
+      <span className="ck__caixa" aria-hidden />
+      <span className="ck__rotulo">{rotulo}</span>
+    </label>
+  )
+}
+
+=== Checkbox | checkbox.css
+.ck { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--c-text); cursor: pointer; }
+.ck input { position: absolute; opacity: 0; width: 0; height: 0; }
+.ck__caixa { position: relative; width: 18px; height: 18px; border: 1.5px solid var(--c-border); border-radius: 4px; background: var(--c-surface); transition: background .15s, border-color .15s; }
+.ck:hover .ck__caixa { border-color: var(--c-support); }
+.ck input:checked + .ck__caixa, .ck input:indeterminate + .ck__caixa { background: var(--c-support); border-color: var(--c-support); }
+.ck input:checked + .ck__caixa::after { content: ''; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px; border: solid var(--c-surface); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.ck input:indeterminate + .ck__caixa::after { content: ''; position: absolute; left: 3px; right: 3px; top: 7px; height: 2px; background: var(--c-surface); }
+.ck input:focus-visible + .ck__caixa { outline: 2px solid var(--c-support); outline-offset: 2px; }
+.ck.is-desabilitado { color: var(--c-input-text-disabled); cursor: not-allowed; }
+.ck.is-desabilitado .ck__caixa { background: var(--c-input-bg-disabled); border-color: var(--c-input-border-disabled); }
+
+=== Radio Button | Radio.tsx
+export function RadioGroup({ nome, opcoes, valor, onChange }: { nome: string; opcoes: { valor: string; rotulo: string; desabilitado?: boolean }[]; valor: string; onChange: (v: string) => void }) {
+  return (
+    <div role="radiogroup" className="rd-grupo">
+      {opcoes.map(o => (
+        <label key={o.valor} className={`rd${o.desabilitado ? ' is-desabilitado' : ''}`}>
+          <input type="radio" name={nome} value={o.valor} checked={valor === o.valor} disabled={o.desabilitado} onChange={() => onChange(o.valor)} />
+          <span className="rd__bola" aria-hidden /><span>{o.rotulo}</span>
+        </label>
+      ))}
+    </div>
+  )
+}
+
+=== Radio Button | radio.css
+.rd-grupo { display: flex; flex-direction: column; gap: 8px; }
+.rd { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--c-text); cursor: pointer; }
+.rd input { position: absolute; opacity: 0; width: 0; height: 0; }
+.rd__bola { position: relative; width: 18px; height: 18px; border: 1.5px solid var(--c-border); border-radius: 50%; background: var(--c-surface); }
+.rd:hover .rd__bola { border-color: var(--c-support); }
+.rd input:checked + .rd__bola { border-color: var(--c-support); }
+.rd input:checked + .rd__bola::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: var(--c-support); }
+.rd input:focus-visible + .rd__bola { outline: 2px solid var(--c-support); outline-offset: 2px; }
+.rd.is-desabilitado { color: var(--c-input-text-disabled); cursor: not-allowed; }
+.rd.is-desabilitado .rd__bola { background: var(--c-input-bg-disabled); border-color: var(--c-input-border-disabled); }
+
+=== Number | NumberField.tsx
+/** Campo numérico: aceita só dígitos, mostra separador de milhar pt-BR no blur. */
+import { useState } from 'react'
+
+export function NumberField({ valor, onChange, min, max }: { valor: number | null; onChange: (v: number | null) => void; min?: number; max?: number }) {
+  const [texto, setTexto] = useState(valor == null ? '' : String(valor))
+  const [foco, setFoco] = useState(false)
+  const mostrar = foco || valor == null ? texto : valor.toLocaleString('pt-BR')
+  return (
+    <input
+      className="num" inputMode="numeric" value={mostrar}
+      onFocus={() => { setFoco(true); setTexto(valor == null ? '' : String(valor)) }}
+      onBlur={() => setFoco(false)}
+      onChange={e => {
+        const limpo = e.target.value.replace(/\D/g, '')
+        setTexto(limpo)
+        if (limpo === '') return onChange(null)
+        let n = Number(limpo)
+        if (min != null) n = Math.max(min, n)
+        if (max != null) n = Math.min(max, n)
+        onChange(n)
+      }}
+    />
+  )
+}
+
+=== Number | number.css
+.num { height: 32px; width: 160px; padding: 0 16px; border: 1.5px solid var(--c-border); border-radius: 6px; background: var(--c-surface); font: 12.5px 'Inter', sans-serif; color: var(--c-table-head-txt); text-align: right; font-variant-numeric: tabular-nums; }
+.num:focus { border-color: var(--c-support); outline: none; }
+
+=== List | List.tsx
+import type { ReactNode } from 'react'
+
+interface Item { id: string; titulo: string; detalhe?: string; icone?: ReactNode; acao?: ReactNode; onClick?: () => void }
+
+export function List({ itens, selecionado }: { itens: Item[]; selecionado?: string }) {
+  return (
+    <ul className="lst">
+      {itens.map(i => (
+        <li key={i.id} className={`lst__item${i.id === selecionado ? ' is-sel' : ''}${i.onClick ? ' is-clicavel' : ''}`} onClick={i.onClick}>
+          {i.icone && <span className="lst__ic">{i.icone}</span>}
+          <div className="lst__tx"><b>{i.titulo}</b>{i.detalhe && <span>{i.detalhe}</span>}</div>
+          {i.acao}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+=== List | list.css
+.lst { margin: 0; padding: 0; list-style: none; border: 1px solid var(--c-border); border-radius: 10px; background: var(--c-surface); overflow: hidden; }
+.lst__item { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--c-border-soft); }
+.lst__item:last-child { border-bottom: none; }
+.lst__item.is-clicavel { cursor: pointer; }
+.lst__item.is-clicavel:hover { background: var(--c-surface-2); }
+.lst__item.is-sel { background: color-mix(in srgb, var(--c-support) 8%, var(--c-surface)); }
+.lst__ic { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 8px; background: color-mix(in srgb, var(--c-support) 10%, transparent); color: var(--c-support); }
+.lst__tx { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+.lst__tx b { font-size: 13px; font-weight: 600; color: var(--c-text); }
+.lst__tx span { font-size: 11.5px; color: var(--c-neutral); }
+
+=== Nav Button | NavButton.tsx
+import { NavLink } from 'react-router-dom'
+import type { ReactNode } from 'react'
+
+/** Botão de navegação (leva a outra rota). O ativo é destacado pelo próprio NavLink. */
+export function NavButton({ to, icone, children }: { to: string; icone?: ReactNode; children: ReactNode }) {
+  return <NavLink to={to} className={({ isActive }) => `nbtn${isActive ? ' is-ativo' : ''}`}>{icone}{children}</NavLink>
+}
+
+=== Nav Button | nav-button.css
+.nbtn { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 16px; border-radius: 8px; font: 600 13px 'Inter', sans-serif; color: var(--c-neutral); text-decoration: none; transition: background .15s, color .15s; }
+.nbtn:hover { background: var(--c-surface-2); color: var(--c-text); }
+.nbtn.is-ativo { background: color-mix(in srgb, var(--c-support) 10%, var(--c-surface)); color: var(--c-support); }
+
+=== Progress Bar | ProgressBar.tsx
+export function ProgressBar({ valor, rotulo, tom = 'primary' }: { valor: number; rotulo?: string; tom?: 'primary' | 'success' | 'warning' | 'danger' }) {
+  const pct = Math.max(0, Math.min(100, valor))
+  return (
+    <div className="pb">
+      {rotulo && <div className="pb__topo"><span>{rotulo}</span><b>{Math.round(pct)}%</b></div>}
+      <div className="pb__trilho" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+        <div className={`pb__barra pb__barra--${tom}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  )
+}
+
+=== Progress Bar | progress-bar.css
+.pb__topo { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; color: var(--c-neutral); }
+.pb__topo b { color: var(--c-text); }
+.pb__trilho { height: 8px; border-radius: 4px; background: var(--c-border-soft); overflow: hidden; }
+.pb__barra { height: 100%; border-radius: 4px; transition: width .3s ease; }
+.pb__barra--primary { background: var(--c-support); } .pb__barra--success { background: var(--c-success); }
+.pb__barra--warning { background: var(--c-warning); } .pb__barra--danger { background: var(--c-danger); }
+
+=== Progress Stepper | ProgressStepper.tsx
+import { Check } from '@phosphor-icons/react'
+
+export function ProgressStepper({ etapas, atual }: { etapas: string[]; atual: number }) {
+  return (
+    <ol className="stp" aria-label="Progresso">
+      {etapas.map((e, i) => {
+        const estado = i < atual ? 'feito' : i === atual ? 'atual' : 'futuro'
+        return (
+          <li key={e} className={`stp__item stp__item--${estado}`} aria-current={estado === 'atual' ? 'step' : undefined}>
+            <span className="stp__bola">{estado === 'feito' ? <Check size={12} weight="bold" /> : i + 1}</span>
+            <span className="stp__rotulo">{e}</span>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
+=== Progress Stepper | progress-stepper.css
+.stp { display: flex; align-items: flex-start; margin: 0; padding: 0; list-style: none; }
+.stp__item { position: relative; display: flex; flex: 1; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.stp__item:not(:last-child)::after { content: ''; position: absolute; top: 13px; left: calc(50% + 18px); right: calc(-50% + 18px); height: 2px; background: var(--c-border); }
+.stp__item--feito:not(:last-child)::after { background: var(--c-support); }
+.stp__bola { display: grid; place-items: center; width: 26px; height: 26px; border: 2px solid var(--c-border); border-radius: 50%; background: var(--c-surface); font-size: 11px; font-weight: 700; color: var(--c-text-muted); }
+.stp__item--atual .stp__bola { border-color: var(--c-support); color: var(--c-support); }
+.stp__item--feito .stp__bola { border-color: var(--c-support); background: var(--c-support); color: var(--c-surface); }
+.stp__rotulo { font-size: 11.5px; color: var(--c-neutral); }
+.stp__item--atual .stp__rotulo { color: var(--c-text); font-weight: 700; }
+
+=== Ranking | Ranking.tsx
+import { Star } from '@phosphor-icons/react'
+
+/** Avaliação em estrelas. Sem onChange = só leitura. */
+export function Ranking({ valor, max = 5, onChange }: { valor: number; max?: number; onChange?: (v: number) => void }) {
+  return (
+    <div className="rk" role={onChange ? 'radiogroup' : 'img'} aria-label={`${valor} de ${max}`}>
+      {Array.from({ length: max }, (_, i) => (
+        <button key={i} type="button" className={`rk__estrela${i < valor ? ' is-cheia' : ''}`} disabled={!onChange} onClick={() => onChange?.(i + 1)} aria-label={`${i + 1} estrela${i ? 's' : ''}`}>
+          <Star size={18} weight={i < valor ? 'fill' : 'regular'} />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+=== Ranking | ranking.css
+.rk { display: inline-flex; gap: 2px; }
+.rk__estrela { display: grid; place-items: center; padding: 2px; border: none; background: none; color: var(--c-border); cursor: pointer; }
+.rk__estrela:disabled { cursor: default; }
+.rk__estrela.is-cheia { color: var(--c-warning); }
+.rk__estrela:hover:not(:disabled) { color: var(--c-warning); }
+
+=== Slider | Slider.tsx
+export function Slider({ valor, min = 0, max = 100, passo = 1, onChange, rotulo }: { valor: number; min?: number; max?: number; passo?: number; onChange: (v: number) => void; rotulo?: string }) {
+  const pct = ((valor - min) / (max - min)) * 100
+  return (
+    <label className="sl">
+      {rotulo && <span className="sl__rotulo">{rotulo}<b>{valor}</b></span>}
+      <input type="range" min={min} max={max} step={passo} value={valor} onChange={e => onChange(Number(e.target.value))} style={{ ['--sl-pct' as string]: `${pct}%` }} />
+    </label>
+  )
+}
+
+=== Slider | slider.css
+.sl { display: flex; flex-direction: column; gap: 6px; }
+.sl__rotulo { display: flex; justify-content: space-between; font-size: 12px; color: var(--c-neutral); }
+.sl__rotulo b { color: var(--c-text); }
+.sl input[type='range'] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; outline: none; background: linear-gradient(to right, var(--c-support) var(--sl-pct), var(--c-border-soft) var(--sl-pct)); }
+.sl input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border: 2px solid var(--c-support); border-radius: 50%; background: var(--c-surface); box-shadow: var(--shadow-sm); cursor: pointer; }
+.sl input[type='range']::-moz-range-thumb { width: 14px; height: 14px; border: 2px solid var(--c-support); border-radius: 50%; background: var(--c-surface); cursor: pointer; }
+.sl input[type='range']:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--c-support); outline-offset: 2px; }
+
+=== Spinner Circular | Spinner.tsx
+export function Spinner({ tamanho = 24, rotulo = 'Carregando' }: { tamanho?: number; rotulo?: string }) {
+  return <span className="spn" role="status" aria-label={rotulo} style={{ width: tamanho, height: tamanho }} />
+}
+
+=== Spinner Circular | spinner.css
+.spn { display: inline-block; border: 3px solid var(--c-border-soft); border-top-color: var(--c-support); border-radius: 50%; animation: spn-gira .7s linear infinite; }
+@keyframes spn-gira { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spn { animation-duration: 2s; } }
+
+=== Tooltip | Tooltip.tsx
+import { useId, type ReactNode } from 'react'
+
+/** Dica ao passar o mouse ou focar. Só texto curto; nunca coloque ação clicável aqui. */
+export function Tooltip({ texto, lado = 'top', children }: { texto: string; lado?: 'top' | 'bottom' | 'left' | 'right'; children: ReactNode }) {
+  const id = useId()
+  return (
+    <span className="tip" aria-describedby={id}>
+      {children}
+      <span role="tooltip" id={id} className={`tip__bolha tip__bolha--${lado}`}>{texto}</span>
+    </span>
+  )
+}
+
+=== Tooltip | tooltip.css
+.tip { position: relative; display: inline-flex; }
+.tip__bolha { position: absolute; z-index: 60; padding: 4px 8px; border-radius: 6px; background: var(--c-text); color: var(--c-surface); font-size: 11.5px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .12s; }
+.tip:hover .tip__bolha, .tip:focus-within .tip__bolha { opacity: 1; }
+.tip__bolha--top { bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); }
+.tip__bolha--bottom { top: calc(100% + 6px); left: 50%; transform: translateX(-50%); }
+.tip__bolha--left { right: calc(100% + 6px); top: 50%; transform: translateY(-50%); }
+.tip__bolha--right { left: calc(100% + 6px); top: 50%; transform: translateY(-50%); }
+
+=== Toggle Button | ToggleButton.tsx
+/** Botão que liga/desliga um estado (ex.: negrito). Para opções excludentes use o grupo segmentado. */
+export function ToggleButton({ ativo, onChange, children }: { ativo: boolean; onChange: (v: boolean) => void; children: React.ReactNode }) {
+  return <button type="button" className={`tgl${ativo ? ' is-ativo' : ''}`} aria-pressed={ativo} onClick={() => onChange(!ativo)}>{children}</button>
+}
+
+=== Toggle Button | toggle-button.css
+.tgl { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 16px; border: 1px solid var(--c-border); border-radius: 8px; background: var(--c-surface); font: 600 13px 'Inter', sans-serif; color: var(--c-neutral); cursor: pointer; }
+.tgl:hover { border-color: var(--c-support); color: var(--c-support); }
+.tgl.is-ativo { border-color: var(--c-support); background: color-mix(in srgb, var(--c-support) 10%, var(--c-surface)); color: var(--c-support); }
+
+=== Video Button | VideoButton.tsx
+import { Pause, Play } from '@phosphor-icons/react'
+
+/** Botão redondo de play/pause sobre vídeo ou imagem. */
+export function VideoButton({ tocando, onToggle }: { tocando: boolean; onToggle: () => void }) {
+  return (
+    <button type="button" className="vbtn" onClick={onToggle} aria-label={tocando ? 'Pausar' : 'Reproduzir'}>
+      {tocando ? <Pause size={22} weight="fill" /> : <Play size={22} weight="fill" />}
+    </button>
+  )
+}
+
+=== Video Button | video-button.css
+.vbtn { display: grid; place-items: center; width: 56px; height: 56px; border: none; border-radius: 50%; background: color-mix(in srgb, var(--c-text) 70%, transparent); color: var(--c-surface); backdrop-filter: blur(8px); cursor: pointer; transition: transform .15s, background .15s; }
+.vbtn:hover { background: var(--c-support); transform: scale(1.06); }
+
+=== Wizard | Wizard.tsx
+import { useState, type ReactNode } from 'react'
+
+interface Passo { titulo: string; conteudo: ReactNode; valido?: boolean }
+
+/** Assistente em etapas: Voltar / Próximo / Concluir. Próximo fica desabilitado enquanto o passo não for válido. */
+export function Wizard({ passos, onConcluir }: { passos: Passo[]; onConcluir: () => void }) {
+  const [i, setI] = useState(0)
+  const passo = passos[i]; const ultimo = i === passos.length - 1
+  return (
+    <div className="wz">
+      <ProgressStepper etapas={passos.map(p => p.titulo)} atual={i} />
+      <div className="wz__corpo">{passo.conteudo}</div>
+      <div className="wz__rodape">
+        <Button variant="outline" tone="neutral" disabled={i === 0} onClick={() => setI(i - 1)}>Voltar</Button>
+        <Button disabled={passo.valido === false} onClick={() => ultimo ? onConcluir() : setI(i + 1)}>{ultimo ? 'Concluir' : 'Próximo'}</Button>
+      </div>
+    </div>
+  )
+}
+
+=== Wizard | wizard.css
+.wz { display: flex; flex-direction: column; gap: 24px; padding: 24px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 12px; }
+.wz__corpo { min-height: 120px; }
+.wz__rodape { display: flex; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--c-border-soft); }
+
+=== Scrollbar | scrollbar.css
+/* Scrollbar fina global (5px). Para uma área específica, use a classe .scroll-fino. */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--c-text-muted); }
+* { scrollbar-width: thin; scrollbar-color: var(--c-border) transparent; }   /* Firefox */
+
+/* Tabela com rolagem horizontal: barra mais grossa (10px) para ser fácil de arrastar. */
+.mp-table-wrap::-webkit-scrollbar { height: 10px; }
+.mp-table-wrap::-webkit-scrollbar-thumb { background: var(--c-text-muted); }
+

@@ -1,0 +1,537 @@
+=== Toast | ToastProvider.tsx
+/* Dois tipos num só provider, em PORTAL no canto inferior direito (bottom/right 28px, z-index 9500).
+   - Toast simples (uma linha):  showToast(msg, variant?, action?, duracaoMs?)
+   - Notificação (título+texto): showNotificacao({ tipo, titulo, mensagem?, acao?, duracaoMs?, chave? })
+   Padrão: 4s (8s com ação "Desfazer"); notificação 10s (duracaoMs: null = fica até fechar); máx. 4 empilhadas. */
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
+import { CheckCircle, Info, Megaphone, Siren, WarningCircle, X, type Icon } from '@phosphor-icons/react'
+
+export type ToastVariant = 'success' | 'error' | 'info' | 'warning'
+export interface ToastAction { label: string; onClick: () => void }
+interface ToastItem { id: number; message: string; variant: ToastVariant; action?: ToastAction }
+
+export type TipoNotificacao = 'prazo' | 'alerta' | 'info' | 'sucesso' | 'promocao'
+export interface Notificacao { tipo: TipoNotificacao; titulo: string; mensagem?: string; acao?: ToastAction; duracaoMs?: number | null; chave?: string }
+interface NotificacaoItem extends Notificacao { id: number }
+
+interface Ctx {
+  showToast: (m: string, v?: ToastVariant, a?: ToastAction, duracaoMs?: number) => void
+  showNotificacao: (n: Notificacao) => void
+}
+const ToastContext = createContext<Ctx | null>(null)
+
+const ICONE_TOAST: Record<ToastVariant, ReactNode> = {
+  success: <CheckCircle size={16} weight="fill" />, error: <WarningCircle size={16} weight="fill" />,
+  info: <Info size={16} weight="fill" />, warning: <WarningCircle size={16} weight="fill" />,
+}
+const ICONE_NOTIF: Record<TipoNotificacao, Icon> = { prazo: WarningCircle, alerta: Siren, info: Info, sucesso: CheckCircle, promocao: Megaphone }
+
+export function ToastProvider({ children }: { children: ReactNode }) {
+  const [toasts, setToasts] = useState<ToastItem[]>([])
+  const [notifs, setNotifs] = useState<NotificacaoItem[]>([])
+  const seq = useRef(0)
+
+  const fecharNotif = useCallback((id: number) => setNotifs(p => p.filter(n => n.id !== id)), [])
+  const fecharToast = useCallback((id: number) => setToasts(p => p.filter(t => t.id !== id)), [])
+
+  const showNotificacao = useCallback((n: Notificacao) => {
+    const id = ++seq.current
+    setNotifs(p => (n.chave && p.some(x => x.chave === n.chave)) ? p : [...p, { ...n, id }].slice(-4))   // mesma chave = não repete
+    const dur = n.duracaoMs === undefined ? 10000 : n.duracaoMs
+    if (dur !== null) window.setTimeout(() => fecharNotif(id), dur)
+  }, [fecharNotif])
+
+  const showToast = useCallback((message: string, variant: ToastVariant = 'info', action?: ToastAction, duracaoMs?: number) => {
+    const id = ++seq.current
+    setToasts(p => [...p, { id, message, variant, action }])
+    window.setTimeout(() => fecharToast(id), duracaoMs ?? (action ? 8000 : 4000))
+  }, [fecharToast])
+
+  const value = useMemo(() => ({ showToast, showNotificacao }), [showToast, showNotificacao])
+
+  return (
+    <ToastContext.Provider value={value}>
+      {children}
+      {createPortal(
+        <div className="toast-pilha">
+          {notifs.map(n => { const I = ICONE_NOTIF[n.tipo]; return (
+            <div key={n.id} className={`toast-notif toast-notif--${n.tipo}`} role={n.tipo === 'alerta' || n.tipo === 'prazo' ? 'alert' : 'status'}>
+              <span className="toast-notif__icone"><I size={18} weight="fill" /></span>
+              <div className="toast-notif__textos">
+                <span className="toast-notif__titulo">{n.titulo}</span>
+                {n.mensagem && <span className="toast-notif__msg">{n.mensagem}</span>}
+                {n.acao && <button type="button" className="toast-notif__acao" onClick={() => { n.acao?.onClick(); fecharNotif(n.id) }}>{n.acao.label}</button>}
+              </div>
+              <button type="button" className="toast-notif__fechar" onClick={() => fecharNotif(n.id)} aria-label="Fechar notificação"><X size={14} /></button>
+            </div>
+          ) })}
+          {toasts.map(t => (
+            <div key={t.id} role="status" className={`toast toast--${t.variant}`}>
+              <span style={{ display: 'flex', flexShrink: 0 }}>{ICONE_TOAST[t.variant]}</span>
+              <span>{t.message}</span>
+              {t.action && <button type="button" className="toast__acao" onClick={() => { t.action?.onClick(); fecharToast(t.id) }}>{t.action.label}</button>}
+              <button type="button" className="toast__fechar" onClick={() => fecharToast(t.id)} aria-label="Fechar notificação"><X size={13} weight="bold" /></button>
+            </div>
+          ))}
+        </div>, document.body)}
+    </ToastContext.Provider>
+  )
+}
+
+export function useToast() {
+  const ctx = useContext(ToastContext)
+  if (!ctx) throw new Error('useToast deve ser usado dentro de <ToastProvider>')
+  return ctx
+}
+
+=== Toast | toast.css
+.toast-pilha { position: fixed; bottom: 28px; right: 28px; z-index: 9500; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; pointer-events: none; }
+
+/* Toast simples: uma linha. Cada variante usa o par -bg/-txt do status. */
+.toast { pointer-events: auto; display: flex; align-items: center; gap: 8px; padding: 10px 12px 10px 16px;
+  border: 1.5px solid currentColor; border-radius: 10px; box-shadow: var(--shadow-md);
+  font: 600 13px 'Inter', sans-serif; animation: toast-entra .2s ease; }
+.toast--success { background: var(--c-success-bg); color: var(--c-success-txt); }
+.toast--error   { background: var(--c-danger-bg);  color: var(--c-danger-txt); }
+.toast--info    { background: var(--c-info-bg);    color: var(--c-info-txt); }
+.toast--warning { background: var(--c-warning-bg); color: var(--c-warning-txt); }
+.toast__acao { margin-left: 4px; padding: 4px 10px; border: 1.5px solid currentColor; border-radius: 6px; background: transparent; color: inherit; font: 700 12px 'Inter', sans-serif; cursor: pointer; }
+.toast__fechar { display: flex; padding: 4px; border: none; border-radius: 6px; background: transparent; color: inherit; opacity: .6; cursor: pointer; }
+
+/* Notificação: título + texto, 380px */
+.toast-notif { pointer-events: auto; position: relative; display: flex; align-items: flex-start; gap: 12px;
+  width: 380px; max-width: calc(100vw - 32px); padding: 12px 36px 12px 14px;
+  background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 12px; box-shadow: var(--shadow-lg);
+  font-family: 'Inter', sans-serif; animation: toast-entra .22s ease-out; }
+.toast-notif__icone { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; }
+.toast-notif--prazo    .toast-notif__icone { background: var(--c-warning-bg); color: var(--c-warning); }
+.toast-notif--alerta   .toast-notif__icone { background: var(--c-danger-bg);  color: var(--c-danger); }
+.toast-notif--info     .toast-notif__icone { background: var(--c-info-bg);    color: var(--c-support); }
+.toast-notif--sucesso  .toast-notif__icone { background: var(--c-success-bg); color: var(--c-success); }
+.toast-notif--promocao .toast-notif__icone { background: var(--c-ai-bg);      color: var(--c-ai); }
+.toast-notif--prazo { border-left: 3px solid var(--c-warning); }
+.toast-notif--alerta { border-left: 3px solid var(--c-danger); }
+.toast-notif--promocao { border-left: 3px solid var(--c-ai); }
+.toast-notif__textos { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-top: 1px; }
+.toast-notif__titulo { font-size: 13px; font-weight: 700; color: var(--c-text); line-height: 1.35; }
+.toast-notif__msg { font-size: 12px; color: var(--c-text-muted); line-height: 1.4; }
+.toast-notif__acao { align-self: flex-start; margin-top: 6px; padding: 0; border: none; background: none; font: 600 12px 'Inter', sans-serif; color: var(--c-support); cursor: pointer; }
+.toast-notif__acao:hover { text-decoration: underline; }
+.toast-notif__fechar { position: absolute; top: 8px; right: 8px; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; border-radius: 6px; background: none; color: var(--c-text-muted); cursor: pointer; }
+.toast-notif__fechar:hover { background: var(--c-surface-2); color: var(--c-text); }
+
+@keyframes toast-entra { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .toast, .toast-notif { animation: none; } }
+/* Com o botão de ajuda na tela, a pilha sobe para não cobri-lo: */
+body:has(.ajuda-fab) .toast-pilha { bottom: 88px; }
+
+=== Toast | Uso.tsx
+{/* Raiz da aplicação */}
+<ToastProvider><App /></ToastProvider>
+
+const { showToast, showNotificacao } = useToast()
+showToast('Processo salvo.', 'success')
+showToast('Item excluído.', 'info', { label: 'Desfazer', onClick: desfazer })
+showNotificacao({ tipo: 'prazo', titulo: '3 prazos vencem hoje', mensagem: 'Veja a Agenda.', chave: 'prazos-hoje' })
+
+=== Modal | Modal.tsx
+import type { ReactNode } from 'react'
+
+interface ModalProps {
+  title: string
+  onClose: () => void
+  children: ReactNode
+  /** 'md' (448px, formulários curtos) ou 'lg' (560px, formulários com preview/mais campos). */
+  size?: 'md' | 'lg'
+  /** Sobrepõe a largura quando o formulário precisa de mais espaço. */
+  width?: number
+  /** Sobrepõe o z-index padrão (50) — use 8001+ para aparecer por cima de um drawer. */
+  zIndex?: number
+}
+
+export function Modal({ title, onClose, children, size = 'md', width, zIndex }: ModalProps) {
+  return (
+    <div className="modal-ov" style={zIndex ? { zIndex } : undefined} role="presentation">
+      <div className={`modal modal--${size}`} role="dialog" aria-modal="true" aria-label={title}
+        style={width ? { width, maxWidth: '92vw' } : undefined}>
+        <div className="modal__hdr">
+          <h2 className="modal__titulo">{title}</h2>
+          <button type="button" className="modal__fechar" onClick={onClose} aria-label="Fechar">×</button>
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+=== Modal | modal.css
+.modal-ov { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, .4); }
+.modal { width: 100%; padding: 24px; background: var(--c-surface); border-radius: 12px; box-shadow: var(--shadow-lg); }
+.modal--md { max-width: 448px; }
+.modal--lg { max-width: 92vw; width: 560px; }
+.modal__hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.modal__titulo { margin: 0; font-size: 16px; font-weight: 600; color: var(--c-text); }
+.modal__fechar { border: none; background: none; font-size: 20px; line-height: 1; color: var(--c-text-muted); cursor: pointer; }
+.modal__fechar:hover { color: var(--c-neutral); }
+.modal__rodape { display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px; }   /* padding do modal: 24px */
+
+=== Modal | Uso.tsx
+<Modal title="Adicionar contato" onClose={fechar}>
+  <Field label="Nome" />
+  <div className="modal__rodape">
+    <Button variant="outline" tone="neutral" onClick={fechar}>Cancelar</Button>
+    <Button onClick={salvar}>Salvar</Button>
+  </div>
+</Modal>
+
+=== Dialog | ConfirmModal.tsx
+/* Substitui window.confirm(), que é PROIBIDO no projeto. z-index 10000: fica acima de qualquer coisa.
+   Dois tons: 'perigo' (vermelho, padrão) e 'neutro' (destaque — confirmar ação que não apaga nada). */
+import { WarningCircle } from '@phosphor-icons/react'
+
+interface ConfirmModalProps {
+  title: string
+  message: string
+  confirmLabel?: string       // padrão "Excluir"
+  cancelLabel?: string        // padrão "Cancelar"
+  isLoading?: boolean
+  errorMessage?: string
+  tom?: 'perigo' | 'neutro'
+  onConfirm: () => void
+  onCancel: () => void
+}
+
+export function ConfirmModal({ title, message, confirmLabel = 'Excluir', cancelLabel = 'Cancelar', isLoading = false, errorMessage, tom = 'perigo', onConfirm, onCancel }: ConfirmModalProps) {
+  const neutro = tom === 'neutro'
+  return (
+    <div className="modal-ov" style={{ zIndex: 10000 }} role="presentation">
+      <div className="modal modal--confirm" role="alertdialog" aria-modal="true" aria-label={title}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
+          <div className={`confirm__icone confirm__icone--${tom}`}><WarningCircle size={22} weight="fill" /></div>
+          <div>
+            <h2 className="modal__titulo">{title}</h2>
+            <p className="confirm__msg">{message}</p>
+          </div>
+        </div>
+        {errorMessage && <p className="confirm__erro">{errorMessage}</p>}
+        <div className="modal__rodape">
+          <Button variant="outline" tone="neutral" disabled={isLoading} onClick={onCancel}>{cancelLabel}</Button>
+          <Button tone={neutro ? 'primary' : 'danger'} disabled={isLoading} onClick={onConfirm}>{isLoading ? 'Aguarde...' : confirmLabel}</Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+=== Dialog | confirm.css
+.modal--confirm { max-width: 420px; }
+.confirm__icone { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; }
+.confirm__icone--perigo { background: var(--c-danger-bg); color: var(--c-danger); }
+.confirm__icone--neutro { background: var(--c-info-bg);   color: var(--c-support); }
+.confirm__msg  { margin: 4px 0 0; font-size: 14px; color: var(--c-neutral); }
+.confirm__erro { margin: 0 0 12px; font-size: 14px; color: var(--c-danger); }
+
+=== Dialog | Uso.tsx
+{excluindo && (
+  <ConfirmModal
+    title="Excluir processo?" message="Esta ação não pode ser desfeita."
+    isLoading={mutation.isPending} errorMessage={mutation.error?.message}
+    onConfirm={() => mutation.mutate(id)} onCancel={() => setExcluindo(false)}
+  />
+)}
+
+=== Alert | Aviso.tsx
+/* a) Aviso — dentro de drawer/formulário, 3 tons. */
+import { CheckCircle, Info, WarningCircle } from '@phosphor-icons/react'
+
+export function Aviso({ tom, children }: { tom: 'erro' | 'ok' | 'info'; children: React.ReactNode }) {
+  const Icone = tom === 'erro' ? WarningCircle : tom === 'ok' ? CheckCircle : Info
+  return (
+    <div className={`aviso aviso--${tom}`} role={tom === 'erro' ? 'alert' : 'status'}>
+      <Icone size={14} style={{ flexShrink: 0, marginTop: 2 }} />
+      <span>{children}</span>
+    </div>
+  )
+}
+
+/* b) Faixa de aviso de ação — quando uma ação exige seleção. Fica ABAIXO da toolbar;
+      some no X ou na próxima ação. */
+export function FaixaDeAviso({ children, onFechar }: { children: React.ReactNode; onFechar: () => void }) {
+  return (
+    <div className="aviso-acao" role="status">
+      <WarningCircle size={14} /> {children}
+      <button type="button" onClick={onFechar} aria-label="Fechar"><X size={12} /></button>
+    </div>
+  )
+}
+
+=== Alert | aviso.css
+.aviso { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 12px; padding: 9px 12px; border-radius: 8px; font-size: 12.5px; }
+.aviso--erro { background: var(--c-danger-bg);  color: var(--c-danger-txt); }
+.aviso--ok   { background: var(--c-success-bg); color: var(--c-success-txt); }
+.aviso--info { background: var(--c-info-bg);    color: var(--c-info-txt); }
+
+.aviso-acao { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 8px 16px;
+  border: 1px solid var(--c-warning); border-radius: 8px; background: var(--c-warning-bg); font-size: 12.5px; color: var(--c-warning-txt); }
+.aviso-acao button { margin-left: auto; display: flex; padding: 3px; border: none; border-radius: 4px; background: none; color: inherit; cursor: pointer; }
+
+=== c-drawer | DrawerPainel.tsx
+/* Drawer de configuração: 65% da janela (mín. 480px), desliza da direita. Overlay z 8000 / painel z 8001. */
+import { X } from '@phosphor-icons/react'
+
+export function DrawerPainel({ open, onClose, icone: Icone, titulo, children, rodape }: {
+  open: boolean; onClose: () => void; icone: React.ElementType; titulo: string; children: React.ReactNode; rodape: React.ReactNode
+}) {
+  return (
+    <>
+      <div className={`drw-ov${open ? ' is-aberto' : ''}`} onClick={onClose} />
+      <div className={`drw${open ? ' is-aberto' : ''}`} role="dialog" aria-label={titulo}>
+        <div className="drw__hdr">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Icone size={16} color="var(--c-support)" weight="bold" />
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--c-text)' }}>{titulo}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <BotaoTelaCheia />
+            <button type="button" className="drw__x" onClick={onClose} title="Fechar"><X size={16} weight="bold" /></button>
+          </div>
+        </div>
+        <div className="drw__corpo">{open && children}</div>
+        <div className="mf-footer">{rodape}</div>
+      </div>
+    </>
+  )
+}
+
+/* Cartão de seção dentro do drawer */
+export function Cartao({ titulo, children }: { titulo?: string; children: React.ReactNode }) {
+  return (
+    <div className="drw-cartao">
+      {titulo && <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--c-text)' }}>{titulo}</span>}
+      {children}
+    </div>
+  )
+}
+
+=== c-drawer | BotaoTelaCheia.tsx
+/* Alterna .drawer-tela-cheia no drawer-pai — o dono do drawer não precisa de estado. */
+import { useRef, useState } from 'react'
+import { CornersIn, CornersOut } from '@phosphor-icons/react'
+
+export function BotaoTelaCheia() {
+  const ref = useRef<HTMLButtonElement>(null)
+  const [cheia, setCheia] = useState(false)
+  function alternar() {
+    const drawer = ref.current?.closest('.drw')
+    if (!drawer) return
+    const proximo = !drawer.classList.contains('drawer-tela-cheia')
+    drawer.classList.toggle('drawer-tela-cheia', proximo)
+    setCheia(proximo)
+  }
+  const titulo = cheia ? 'Sair da tela cheia' : 'Tela cheia'
+  return (
+    <button ref={ref} type="button" className="drw__x" onClick={alternar} title={titulo} aria-label={titulo}>
+      {cheia ? <CornersIn size={16} /> : <CornersOut size={16} />}
+    </button>
+  )
+}
+
+=== c-drawer | drawer.css
+.drw-ov { position: fixed; inset: 0; z-index: 8000; background: rgba(0, 0, 0, .3); opacity: 0; pointer-events: none; transition: opacity .3s; }
+.drw-ov.is-aberto { opacity: 1; pointer-events: auto; }
+
+.drw {
+  position: fixed; top: 0; right: -65%; z-index: 8001; display: flex; flex-direction: column;
+  width: 65%; min-width: 480px; height: 100vh; height: 100dvh;
+  background: var(--c-surface); box-shadow: var(--shadow-lg);
+  transition: right .3s cubic-bezier(.4, 0, .2, 1), width .3s cubic-bezier(.4, 0, .2, 1);
+}
+.drw.is-aberto { right: 0; }
+.drw:not(.is-aberto) { box-shadow: none; }                       /* senão a sombra vaza como faixa cinza na borda */
+.drw.drawer-tela-cheia { width: 100%; }
+@media (max-width: 768px) { .drw { width: 100%; min-width: 0; right: -100%; } }
+
+.drw__hdr { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; padding: 14px 18px;
+  border-bottom: 1px solid var(--c-border-soft); background: var(--c-surface-2); }
+.drw__x { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: none; border-radius: 7px; background: none; color: var(--c-neutral); cursor: pointer; }
+.drw__x:hover { background: var(--c-border-soft); }
+.drw__corpo { flex: 1; overflow-y: auto; padding: 18px 20px; background: var(--c-surface-2); }
+.drw-cartao { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; padding: 14px 16px; background: var(--c-surface); border: 1px solid var(--c-border-soft); border-radius: 12px; }
+
+/* Drawer de DETALHE (variante maior, z 9001, cabeçalho 20px 22px 18px): mesmo esqueleto, título 16/800. */
+.drw-secao-titulo { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
+  font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; color: var(--c-text); }
+
+=== c-drawer | Uso.tsx
+<DrawerPainel
+  open={aberto} onClose={() => setAberto(false)} icone={Gear} titulo="Acesso ao INPI"
+  rodape={<>
+    <Button variant="outline" tone="neutral" onClick={() => setAberto(false)}>Cancelar</Button>
+    <Button onClick={salvar}>Salvar</Button>
+  </>}
+>
+  <Cartao titulo="Credenciais"><Field label="Usuário" /></Cartao>
+</DrawerPainel>
+
+{/* Modal por cima de drawer: passe zIndex ≥ 8002 ao Modal (o ConfirmModal já é 10000). */}
+
+=== c-estados | EstadoVazio.tsx
+/* Quatro variantes — o componente diz POR QUE está vazio e oferece o próximo passo.
+   inicio        tela aberta, ainda não pesquisou — texto começa com "Comece…", SEM botões
+   sem-resultado pesquisou e não achou — mostra os filtros ativos removíveis
+   sem-cadastro  a tela ainda não tem nenhum registro — chama o cadastro
+   erro          o carregamento falhou — "Tentar novamente" */
+import type { ReactNode } from 'react'
+import { ListMagnifyingGlass, MagnifyingGlass, Tray, WarningCircle, X, type Icon } from '@phosphor-icons/react'
+
+export type Variante = 'inicio' | 'sem-resultado' | 'sem-cadastro' | 'erro'
+export interface FiltroAtivo { chave: string; rotulo: string; valor: string }
+export interface AcaoVazio { rotulo: string; onClick: () => void; tipo?: 'primaria' | 'secundaria' }
+
+const ICONES: Record<Variante, { icone: Icon; cor: string }> = {
+  inicio: { icone: ListMagnifyingGlass, cor: 'var(--c-support)' },
+  'sem-resultado': { icone: MagnifyingGlass, cor: 'var(--c-text-muted)' },
+  'sem-cadastro': { icone: Tray, cor: 'var(--c-support)' },
+  erro: { icone: WarningCircle, cor: 'var(--c-danger)' },
+}
+
+export function EstadoVazio({ variante, titulo, descricao, filtrosAtivos, onRemoverFiltro, acoes }: {
+  variante: Variante; titulo: string; descricao?: ReactNode
+  filtrosAtivos?: FiltroAtivo[]; onRemoverFiltro?: (chave: string) => void; acoes?: AcaoVazio[]
+}) {
+  const { icone: I, cor } = ICONES[variante]
+  return (
+    <div className={`vazio vazio--${variante}`} role={variante === 'erro' ? 'alert' : 'status'}>
+      <span className={`vazio__icone vazio__icone--${variante}`}><I size={32} color={cor} /></span>
+      <strong className="vazio__titulo">{titulo}</strong>
+      {descricao && <p className="vazio__desc">{descricao}</p>}
+      {filtrosAtivos?.length ? (
+        <div className="vazio__filtros">
+          {filtrosAtivos.map(f => (
+            <span key={f.chave} className="vazio__chip">
+              <span style={{ color: 'var(--c-neutral)' }}>{f.rotulo}:</span> {f.valor}
+              {onRemoverFiltro && <button type="button" onClick={() => onRemoverFiltro(f.chave)} aria-label={`Remover o filtro ${f.rotulo} e pesquisar de novo`}><X size={10} weight="bold" /></button>}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {acoes?.length ? (
+        <div className="vazio__acoes">
+          {acoes.map(a => <Button key={a.rotulo} variant={a.tipo === 'primaria' ? 'filled' : 'outline'} tone={a.tipo === 'primaria' ? 'primary' : 'neutral'} onClick={a.onClick}>{a.rotulo}</Button>)}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+=== c-estados | estado-vazio.css
+.vazio { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 48px 24px; text-align: center;
+  background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 10px; box-shadow: var(--shadow-sm); font-size: 13px; color: var(--c-neutral); }
+.vazio--inicio { margin-top: 16px; padding: 64px 24px; }
+.vazio__icone { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; margin-bottom: 8px; border-radius: 50%; background: var(--c-surface-2); }
+.vazio__icone--erro { background: var(--c-danger-bg); }
+.vazio__icone--sem-cadastro, .vazio__icone--inicio { background: color-mix(in srgb, var(--c-support) 10%, var(--c-surface)); }
+.vazio__titulo { font-size: 13px; font-weight: 700; color: var(--c-text); }
+.vazio__desc { max-width: 520px; margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--c-neutral); }
+.vazio__filtros { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 720px; margin-top: 8px; }
+.vazio__chip { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; height: 24px; padding: 0 8px 0 12px; overflow: hidden;
+  border: 1px solid var(--c-border); border-radius: 12px; background: var(--c-surface-2); font-size: 12px; color: var(--c-text); white-space: nowrap; text-overflow: ellipsis; }
+.vazio__chip button { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; margin-left: 2px; padding: 0; border: none; border-radius: 50%; background: none; color: var(--c-neutral); cursor: pointer; }
+.vazio__chip button:hover { background: var(--c-danger-bg); color: var(--c-danger); }
+.vazio__acoes { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+
+=== c-estados | Uso.tsx
+{/* Antes da 1ª pesquisa */}
+<EstadoVazio variante="inicio" titulo="Comece pesquisando" descricao="Preencha os filtros acima e clique em Pesquisar." />
+
+{/* Pesquisou e não achou */}
+<EstadoVazio variante="sem-resultado" titulo="Nenhum processo encontrado"
+  filtrosAtivos={[{ chave: 'marca', rotulo: 'Marca', valor: 'APOL' }]} onRemoverFiltro={removerFiltro}
+  acoes={[{ rotulo: 'Limpar filtros', onClick: limpar }]} />
+
+{/* Falhou */}
+<EstadoVazio variante="erro" titulo="Não foi possível carregar" acoes={[{ rotulo: 'Tentar novamente', onClick: refetch, tipo: 'primaria' }]} />
+
+=== x-overlay | Carregando.tsx
+/* Listagem NÃO usa skeleton: o padrão é um overlay translúcido sobre o bloco de resultados.
+   O miolo é sticky para o spinner não sair da viewport em listas longas.
+   O bloco pai precisa de position: relative. */
+import { ArrowClockwise } from '@phosphor-icons/react'
+
+export function OverlayDeCarregamento() {
+  return (
+    <div className="ov-load" role="status" aria-live="polite">
+      <div className="ov-load__miolo">
+        <ArrowClockwise size={18} className="ov-load__spin" />
+        <span>Carregando...</span>
+      </div>
+    </div>
+  )
+}
+
+=== x-overlay | carregando.css
+.ov-load { position: absolute; inset: 0; z-index: 2; border-radius: 10px; background: var(--doc-overlay-load, color-mix(in srgb, var(--c-surface) 75%, transparent)); }
+.ov-load__miolo { position: sticky; top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 0; font-size: 12px; font-weight: 600; color: var(--c-support); }
+.ov-load__spin { animation: ov-spin .7s linear infinite; }
+@keyframes ov-spin { to { transform: rotate(360deg); } }
+
+/* skeleton (shimmer) existe, mas só para cards/tiles — nunca em listagem */
+.skeleton { border-radius: 6px; background: linear-gradient(90deg, var(--c-border-soft) 25%, var(--c-surface-2) 50%, var(--c-border-soft) 75%);
+  background-size: 1200px 100%; animation: skeleton-shimmer 1.6s infinite linear; }
+@keyframes skeleton-shimmer { 0% { background-position: -600px 0; } 100% { background-position: 600px 0; } }
+
+=== x-overlay | Uso.tsx
+<div ref={resultadosRef} style={{ position: 'relative' }}>
+  {isFetching && <OverlayDeCarregamento />}
+  {/* barra de resultados + tabela + paginação */}
+</div>
+
+=== x-ajuda | BotaoDeAjuda.css
+/* FAB circular de 48px no canto inferior direito que abre um painel de tópicos (accordion).
+   Os toasts sobem sozinhos para não cobri-lo (body:has(.ajuda-fab) .toast-pilha). */
+.ajuda-fab {
+  position: fixed; right: 24px; bottom: 24px; z-index: 800; width: 48px; height: 48px;
+  display: flex; align-items: center; justify-content: center; border: none; border-radius: 50%;
+  background: var(--c-support); color: var(--c-surface); box-shadow: var(--shadow-lg); cursor: pointer;
+  transition: transform .15s, background .15s;
+}
+.ajuda-fab:hover { background: var(--c-support-h); transform: translateY(-2px); }
+.ajuda-painel {
+  position: fixed; right: 24px; bottom: 24px; z-index: 850; display: flex; flex-direction: column; overflow: hidden;
+  width: 384px; max-width: calc(100vw - 32px);
+  background: var(--c-surface); color: var(--c-text); border: 1px solid var(--c-border); border-radius: 12px; box-shadow: var(--shadow-lg);
+}
+.ajuda-topico { border: 1px solid var(--c-border); border-radius: 8px; background: var(--c-surface); }
+.ajuda-topico.is-aberto { border-color: var(--c-support); }
+
+=== x-ajuda | BotaoDeAjuda.tsx
+import { useState } from 'react'
+import { Question, X } from '@phosphor-icons/react'
+
+export function BotaoDeAjuda({ topicos }: { topicos: { id: string; titulo: string; conteudo: React.ReactNode }[] }) {
+  const [aberto, setAberto] = useState(false)
+  const [topico, setTopico] = useState<string | null>(null)
+  return (
+    <>
+      {!aberto && <button type="button" className="ajuda-fab" onClick={() => setAberto(true)} aria-label="Ajuda desta tela"><Question size={22} weight="bold" /></button>}
+      {aberto && (
+        <div className="ajuda-painel" role="dialog" aria-label="Ajuda desta tela">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px' }}>
+            <strong style={{ fontSize: 14 }}>Ajuda desta tela</strong>
+            <button type="button" className="drw__x" onClick={() => setAberto(false)} aria-label="Fechar"><X size={16} weight="bold" /></button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '0 16px 16px', overflowY: 'auto', maxHeight: '60vh' }}>
+            {topicos.map(t => (
+              <div key={t.id} className={`ajuda-topico${topico === t.id ? ' is-aberto' : ''}`}>
+                <button type="button" onClick={() => setTopico(topico === t.id ? null : t.id)}
+                  style={{ width: '100%', padding: '10px 12px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: 'var(--c-text)', cursor: 'pointer' }}>{t.titulo}</button>
+                {topico === t.id && <div style={{ padding: '0 12px 12px', fontSize: 12.5, color: 'var(--c-neutral)' }}>{t.conteudo}</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  )
+}

@@ -1,0 +1,147 @@
+=== c-tabela | Tabela.tsx
+/* Não existe componente DataTable: a <table> é escrita à mão com classes. O modificador por tela é OBRIGATÓRIO. */
+<div className="mp-table-wrap">
+  <table className="mp-table mp-table--minha-tela">
+    <thead>
+      <tr>
+        <th style={{ width: 40 }}><input type="checkbox" checked={todosNaPagina} onChange={alternarPagina} /></th>
+        <th style={{ width: 120 }}>Processo</th>
+        <th>Marca</th>
+        <th style={{ width: 96 }}>Apres.</th>
+        <th className="mp-col-acoes" style={{ width: 64 }}>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {itens.map(i => (
+        <tr key={i.id}>
+          <td><input type="checkbox" checked={sel.has(i.id)} onChange={() => alternar(i.id)} /></td>
+          <td><span className="mp-proc" onClick={() => abrirDrawer(i)}>{i.numero}</span></td>
+          <td>{i.marca}</td>
+          <td><ApresentacaoBadge sigla={i.apresentacao} /></td>
+          <td className="mp-col-acoes"><button className="mp-pag-btn" title="Mais"><DotsThree size={18} /></button></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+/* Seleção: useState<Set<string>> chaveado por id; PERSISTE entre páginas;
+   o checkbox do cabeçalho marca/desmarca só a página atual. */
+
+=== c-tabela | tabela.css
+.mp-table-wrap {
+  overflow-x: auto; max-width: 100%;
+  background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 10px; box-shadow: var(--shadow-sm);
+}
+.mp-table { width: 100%; min-width: 1300px; border-collapse: collapse; table-layout: fixed; font-size: 12.5px; }
+
+.mp-table thead th {
+  text-align: left; background: var(--c-table-head); color: var(--c-table-head-txt);
+  padding: 8px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+  border-bottom: 1.5px solid var(--c-border-soft);
+  white-space: normal; line-height: 1.3; overflow-wrap: break-word;       /* o rótulo quebra, nunca vaza */
+}
+.mp-table tbody td { padding: 8px 16px; border-bottom: 1px solid var(--c-border-soft); vertical-align: top; overflow-wrap: break-word; }
+.mp-table tbody tr:last-child td { border-bottom: none; }
+.mp-table tbody tr:hover { background: var(--c-surface-2); }
+
+/* Coluna de ações fixa à direita durante a rolagem horizontal */
+.mp-table th.mp-col-acoes, .mp-table td.mp-col-acoes {
+  position: sticky; right: 0; z-index: 2; background: var(--c-surface);
+  box-shadow: -6px 0 8px -6px rgba(17, 24, 39, .12);
+}
+.mp-table thead th.mp-col-acoes { background: var(--c-table-head); }
+.mp-table tbody tr:hover td.mp-col-acoes { background: var(--c-surface-2); }
+
+.mp-proc { font-weight: 700; color: var(--c-support); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* >>> OBRIGATÓRIO por tela: sem isto nasce scroll horizontal (min-width: 1300px acima) <<< */
+.mp-table--minha-tela { min-width: 0; width: 100%; table-layout: fixed; }
+
+=== c-tabela | Se a tabela rolar na horizontal
+/* Quatro causas já vistas:
+   1. falta  min-width: 0; width: 100%  no modificador da tela;
+   2. texto longo sem truncagem  →  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+   3. imagem dentro de <td>      →  width: 100%; max-width: 60px; height: auto; aspect-ratio: 1; min-width: 0;
+   4. rótulo de coluna de palavra única maior que a coluna → largura = rótulo + 32px, arredondada para múltiplo de 8.
+   Regras fixas: padding de célula SEMPRE 8px 16px (denso: 8px 8px). Nunca 6, 7, 10 ou 12.
+   Não há ordenação por clique no <th>: a ordenação é sempre pelo select da barra de resultados. */
+
+=== x-minitabela | MiniTabela.tsx
+/* Tabela pequena dentro de drawer ou modal. */
+<table className="det-mini-table">
+  <thead><tr><th>Código</th><th>Descrição</th></tr></thead>
+  <tbody>
+    <tr><td className="det-mt-code">IPAS-100</td><td className="det-mt-spec">Publicação do pedido</td></tr>
+  </tbody>
+</table>
+
+=== x-minitabela | mini-tabela.css
+.det-mini-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; border: 1px solid var(--c-border); border-radius: 8px; overflow: hidden; }
+.det-mini-table th {
+  text-align: left; font-size: 10px; font-weight: 700; color: var(--c-table-head-txt); text-transform: uppercase;
+  letter-spacing: .3px; background: var(--c-table-head); padding: 8px; border-bottom: 1px solid var(--c-border-soft);
+}
+.det-mini-table td { padding: 8px; border-bottom: 1px solid var(--c-border-soft); color: var(--c-text); vertical-align: top; line-height: 1.5; }
+.det-mini-table tr:last-child td { border-bottom: none; }
+.det-mini-table .det-mt-code { font-weight: 700; color: var(--c-support); white-space: nowrap; padding-right: 16px; }
+.det-mini-table .det-mt-spec { color: var(--c-table-head-txt); font-size: 11.5px; }
+
+=== Badges | Badge.tsx
+/* Badge de status (pílula) e badge de apresentação (sigla 22×22). */
+const APRESENTACAO: Record<string, string> = { N: 'Nominativa', M: 'Mista', F: 'Figurativa' }
+
+export function ApresentacaoBadge({ sigla }: { sigla: string | null | undefined }) {
+  const s = sigla?.trim().toUpperCase() || null
+  return <span className={`badge-sigla${s ? ` badge-sigla--${s}` : ''}`} title={s ? APRESENTACAO[s] ?? s : undefined}>{s || '—'}</span>
+}
+
+export function StatusBadge({ tom, children }: { tom: 'success' | 'info' | 'warning' | 'danger'; children: React.ReactNode }) {
+  return <span className={`badge badge--${tom}`}>{children}</span>
+}
+
+=== Badges | badge.css
+/* Status = par --c-<status>-bg + --c-<status>-txt. NUNCA cor literal: para um status novo, crie o par de tokens. */
+.badge { display: inline-flex; align-items: center; align-self: flex-start; padding: 3px 6px; border-radius: 20px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .3px; box-shadow: var(--shadow-sm); }
+.badge--success { background: var(--c-success-bg); color: var(--c-success-txt); }
+.badge--info    { background: var(--c-info-bg);    color: var(--c-info-txt); }
+.badge--warning { background: var(--c-warning-bg); color: var(--c-warning-txt); }
+.badge--danger  { background: var(--c-danger-bg);  color: var(--c-danger-txt); }
+
+.badge-sigla { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+  border-radius: 6px; font-size: 11px; font-weight: 800; background: var(--c-surface-2); color: var(--c-table-head-txt); }
+.badge-sigla--N { background: var(--c-info-bg);    color: var(--c-info-txt); }
+.badge-sigla--M { background: var(--c-warning-bg); color: var(--c-warning-txt); }
+.badge-sigla--F { background: var(--c-success-bg); color: var(--c-success-txt); }
+
+/* Chip "E": conector AND entre itens de uma lista de filtro */
+.chip-e { flex-shrink: 0; padding: 1px 7px; border-radius: 4px; font-size: 10px; font-weight: 800; letter-spacing: .5px;
+  color: var(--c-info-txt); background: var(--c-info-bg); }
+
+=== Badges | Uso.tsx
+<StatusBadge tom="success">CONCEDIDA</StatusBadge>
+<StatusBadge tom="info">PEDIDO</StatusBadge>
+<StatusBadge tom="warning">EXIGÊNCIA</StatusBadge>
+<StatusBadge tom="danger">ARQUIVADO</StatusBadge>
+<ApresentacaoBadge sigla="N" />
+
+=== c-kpi | CardDePainel.tsx
+/* Card de indicador (KPI). Padding 12px 16px; valor 20/800; rótulo 11.5px neutro. */
+export function Kpi({ rotulo, valor, detalhe }: { rotulo: string; valor: string; detalhe?: string }) {
+  return (
+    <div className="kpi">
+      <span className="kpi__rotulo">{rotulo}</span>
+      <strong className="kpi__valor">{valor}</strong>
+      {detalhe && <span className="kpi__detalhe">{detalhe}</span>}
+    </div>
+  )
+}
+
+=== c-kpi | kpi.css
+.kpi { display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: 10px; box-shadow: var(--shadow-sm); }
+.kpi__rotulo  { font-size: 11.5px; color: var(--c-neutral); }
+.kpi__valor   { font-size: 20px; font-weight: 800; line-height: 1.2; color: var(--c-text); }
+.kpi__detalhe { font-size: 11.5px; color: var(--c-text-muted); }
+.kpi-grade { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+@media (max-width: 1100px) { .kpi-grade { grid-template-columns: repeat(3, 1fr); } }

@@ -1,0 +1,190 @@
+/* Seletor de período De → Até (SeletorDePeriodo.tsx) e data única (SeletorDeData.tsx). Os campos têm o
+   mesmo visual dos campos de data dos filtros; o ícone nativo some e no lugar fica o CalendarBlank,
+   porque o clique abre o calendário próprio (.mf-periodo-pop), renderizado em portal. */
+.mf-periodo { display: flex; align-items: center; gap: 8px; }
+.mf-periodo-campo { position: relative; display: flex; align-items: center; }
+/* Dentro de uma linha de filtro (.mf-row-val): os dois campos dividem a largura, como os outros campos. */
+.mf-periodo--preenche { flex: 1; min-width: 0; }
+.mf-periodo--preenche .mf-periodo-campo { flex: 1 1 0; min-width: 0; }
+.mf-periodo-campo input[type="date"] {
+  width: 100%;
+  height: 32px;
+  border: 1.5px solid var(--dk-border, #e2e8f0);
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: var(--dk-text-2, #374151);
+  padding: 0 32px 0 16px;
+  background: var(--dk-surface, #fff);
+  min-width: 0;
+  cursor: pointer;
+}
+.mf-periodo-campo input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
+.mf-periodo-campo.ativo input[type="date"] { border-color: var(--c-support); }
+.mf-periodo-campo svg {
+  position: absolute;
+  right: 12px;
+  color: var(--dk-text-2, #374151);
+  pointer-events: none;
+}
+
+/* Acima dos drawers (9001) e das modais de lote (9200): o seletor de data também abre dentro deles.
+   Abaixo do zoom de figura (9500). */
+.mf-periodo-pop {
+  position: fixed;
+  z-index: 9400;
+  padding: 16px 20px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+}
+.mf-periodo-meses { position: relative; display: flex; gap: 32px; }
+.mf-periodo-nav {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--c-neutral);
+  cursor: pointer;
+}
+.mf-periodo-nav:hover { background: var(--dk-hover, #EFF6FF); color: var(--c-support); }
+.mf-periodo-nav--ant { left: 0; }
+.mf-periodo-nav--prox { right: 0; }
+.mf-periodo-mes-tit {
+  height: 28px;
+  line-height: 28px;
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text);
+}
+.mf-periodo-grade { display: grid; grid-template-columns: repeat(7, 36px); row-gap: 4px; }
+.mf-periodo-sem {
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-neutral);
+}
+.mf-periodo-dia {
+  position: relative;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: var(--c-text);
+  cursor: pointer;
+}
+.mf-periodo-dia:hover { background: var(--dk-hover, #EFF6FF); }
+.mf-periodo-dia.hoje { font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.mf-periodo-dia.no-intervalo {
+  border-radius: 0;
+  background: color-mix(in srgb, var(--c-support) 12%, transparent);
+  color: var(--c-support);
+}
+.mf-periodo-dia.no-intervalo.borda-esq { border-radius: 8px 0 0 8px; }
+.mf-periodo-dia.no-intervalo.borda-dir { border-radius: 0 8px 8px 0; }
+.mf-periodo-dia.no-intervalo.borda-esq.borda-dir { border-radius: 8px; }
+.mf-periodo-dia.ponta { background: var(--c-support); color: #fff; font-weight: 700; }
+.mf-periodo-dica {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #374151;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
+}
+.mf-periodo-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--c-border);
+}
+.mf-periodo-resumo { font-size: 12px; color: var(--c-neutral); }
+
+/* Data única (SeletorDeData.tsx): mesmo campo e mesmo calendário do período, com um mês só. O campo
+   ocupa a largura do formulário; no rodapé, a data por extenso fica em cima e os botões Limpar / Hoje
+   sempre alinhados à direita. */
+.mf-data { width: 100%; }
+.mf-data .mf-periodo-campo { flex: 1; min-width: 0; }
+.mf-data-rodape { flex-direction: column; align-items: stretch; gap: 8px; }
+.mf-data-botoes { display: flex; justify-content: flex-end; gap: 8px; }
+/* Estados dos campos (data única e período), iguais aos dos outros campos. */
+.mf-periodo-campo input[type="date"]:disabled,
+.mf-periodo-campo input[type="date"]:read-only { background: var(--c-input-bg-disabled); cursor: not-allowed; }
+.mf-periodo-campo input[type="date"].mf-input-error { border-color: var(--c-input-error); }
+.mf-periodo-dia:disabled { color: var(--c-text-muted); opacity: .45; cursor: not-allowed; background: none; }
+/* Compacto: dentro de linha de tabela (28px). */
+.mf-data--compacta .mf-periodo-campo input[type="date"] { height: 28px; font-size: 12px; padding: 0 28px 0 8px; }
+.mf-data--compacta .mf-periodo-campo svg { right: 8px; }
+
+/* Botões do rodapé do calendário (Cancelar / Confirmar / Limpar / Hoje): 40px, Inter 14/600, raio 8. */
+.mf-btn-clear,
+.mf-btn-search {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.mf-btn-clear {
+  background: transparent;
+  border-color: var(--dk-border, #e2e8f0);
+  color: var(--dk-text-2, #51515C);
+}
+
+.mf-btn-search {
+  background: var(--c-support);
+  border-color: var(--c-support);
+  color: #fff;
+}
+
+/* Desabilitado (Confirmar sem De/Até; Hoje fora de min/max) */
+.mf-btn-search:disabled {
+  background: var(--dk-border, #cbd5e1) !important;
+  border-color: var(--dk-border, #cbd5e1) !important;
+  color: #fff !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+.mf-btn-clear:disabled {
+  background: var(--dk-surface, #fff) !important;
+  border-color: var(--c-border) !important;
+  color: var(--dk-muted, #cbd5e1) !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}

@@ -1,0 +1,62 @@
+=== x-tokens | tokens.json
+{
+  "color": {
+    "brand":    { "base": "#0D2137", "hover": "#16304F" },
+    "accent":   { "base": "#0059AD", "hover": "#004A8F", "active": "#003E7E", "_nota": "sobrescrito por tema de usuário" },
+    "secondary":{ "base": "#27AE60", "hover": "#219150", "active": "#1B7A44" },
+    "neutral":  { "base": "#6B7280", "hover": "#4B5563", "muted": "#9CA3AF" },
+    "text":     { "base": "#1F2937", "tableHead": "#374151" },
+    "surface":  { "bg": "#F4F6F9", "base": "#FFFFFF", "alt": "#F8FAFC", "tableHead": "#F9FAFB" },
+    "border":   { "base": "#E5E7EB", "soft": "#EDF0F5" },
+    "sidebar":  { "bg": "#001A33" },
+    "status": {
+      "success": { "base": "#27AE60", "bg": "#DCFCE7", "text": "#166534" },
+      "danger":  { "base": "#EF4444", "bg": "#FEE2E2", "text": "#991B1B" },
+      "warning": { "base": "#F59E0B", "bg": "#FEF3C7", "text": "#92400E" },
+      "info":    { "base": "#3B82F6", "bg": "#DBEAFE", "text": "#1E40AF" },
+      "ai":      { "base": "#8B5CF6", "hover": "#7C3AED", "bg": "#EDE9FE" },
+      "reminder":{ "base": "#F97316", "bg": "#FFEDD5" }
+    },
+    "input": { "borderDisabled": "#D6D6E6", "bgDisabled": "#F6F6FF", "textDisabled": "#9E9E9E", "error": "#D22D37" },
+    "dark": {
+      "bg": "#0F141A", "surface": "#161D26", "surfaceAlt": "#1C2530", "text": "#E6EAF0",
+      "border": "#2A3542", "borderSoft": "#222C38", "tableHead": "#1C2530", "tableHeadText": "#C5CDD8",
+      "neutral": "#9AA5B4", "muted": "#6E7A8A", "accentDefault": "#3B8AE0",
+      "status": {
+        "successBg": "#12301F", "successText": "#6EE7A0", "dangerBg": "#3A1717", "dangerText": "#FCA5A5",
+        "warningBg": "#3A2A0C", "warningText": "#FCD34D", "infoBg": "#142744", "infoText": "#93C5FD", "aiBg": "#2A2145"
+      }
+    }
+  },
+  "themes": {
+    "padrao":  { "accent": "#0059AD", "sidebar": "#001A33", "darkAccent": "#3B8AE0" },
+    "violeta": { "accent": "#7C3AED", "sidebar": "#241B3D", "darkAccent": "#8B5CF6" },
+    "ambar":   { "accent": "#D97706", "sidebar": "#3A2607", "darkAccent": "#D97706" },
+    "teal":    { "accent": "#0D9488", "sidebar": "#062A28", "darkAccent": "#0E9F94" },
+    "rosa":    { "accent": "#DB2777", "sidebar": "#3D1225", "darkAccent": "#EC4899" },
+    "cinza":   { "accent": "#475569", "sidebar": "#1E293B", "darkAccent": "#7C8BA1" },
+    "marinho": { "accent": "#001A33", "sidebar": "#000D1A", "darkAccent": "#4F7FB0" }
+  },
+  "font": {
+    "family": "Inter, sans-serif",
+    "base": "13px",
+    "size": { "pageTitle": "20px", "drawerTitle": "16px", "title": "14px", "body": "13px", "field": "12.5px", "label": "12px", "meta": "11.5px", "tableHead": "11px", "caption": "10.5px", "micro": "10px" },
+    "weight": { "regular": 400, "medium": 500, "semibold": 600, "bold": 700, "extrabold": 800 }
+  },
+  "space": { "1": "4px", "2": "8px", "3": "12px", "4": "16px", "5": "20px", "6": "24px", "8": "32px", "_tabelaCelula": "8px 16px" },
+  "radius": { "xs": "4px", "sm": "6px", "md": "8px", "lg": "10px", "xl": "12px", "pill": "20px", "circle": "50%" },
+  "shadow": {
+    "sm": "0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04)",
+    "md": "0 4px 16px rgba(0,0,0,.10), 0 1px 4px rgba(0,0,0,.06)",
+    "lg": "0 12px 40px rgba(0,0,0,.15), 0 4px 12px rgba(0,0,0,.08)"
+  },
+  "size": {
+    "buttonSmall": "32px", "buttonMedium": "44px", "buttonLarge": "56px", "fieldHeight": "32px", "fieldFormHeight": "34px",
+    "tableControl": "28px", "topbar": "56px", "sidebar": "220px", "sidebarMin": "200px", "sidebarMax": "420px",
+    "drawerWidth": "65%", "drawerMin": "480px", "modalMd": "448px", "modalLg": "560px", "confirm": "420px", "toast": "380px"
+  },
+  "breakpoint": { "dashboard": "1100px", "filters": "900px", "sidebarOverlay": "768px", "toolbar": "640px", "login": "479px" },
+  "zIndex": { "stickyCell": 2, "filterCard": 10, "autocomplete": 20, "popover": 40, "modal": 50, "helpFab": 800, "drawerPanelOverlay": 8000, "drawerPanel": 8001, "drawerDetail": 9001, "toast": 9500, "helpFull": 9610, "confirm": 10000 },
+  "motion": { "fast": "150ms", "base": "200ms", "drawer": "300ms cubic-bezier(.4,0,.2,1)", "accordion": "400ms ease" },
+  "icon": { "default": 14, "action": 16, "rowAction": 18, "emptyState": 32, "library": "@phosphor-icons/react" }
+}
